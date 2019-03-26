@@ -680,7 +680,7 @@ public class ApidbWriter implements Sink, EntityProcessor {
             }
         }
         
-        dbCtx.commit();
+        dbCtx.commit(); //--gll 是不是位置有问题 compete也是提交
     }
 
     /**
@@ -745,7 +745,7 @@ public class ApidbWriter implements Sink, EntityProcessor {
             }
         }
         
-        dbCtx.commit();
+        dbCtx.commit();//gll 真不理解
     }
 
     /**
@@ -790,7 +790,7 @@ public class ApidbWriter implements Sink, EntityProcessor {
             }
         }
         
-        dbCtx.commit();
+        dbCtx.commit();//gll 真不理解
     }
 
     /**
@@ -834,7 +834,7 @@ public class ApidbWriter implements Sink, EntityProcessor {
             }
         }
         
-        dbCtx.commit();
+        dbCtx.commit();//gll 真不理解
     }
 
     /**
@@ -898,7 +898,7 @@ public class ApidbWriter implements Sink, EntityProcessor {
             }
         }
         
-        dbCtx.commit();
+        dbCtx.commit();//gll 真不理解
     }
 
     /**
@@ -943,7 +943,7 @@ public class ApidbWriter implements Sink, EntityProcessor {
             }
         }
         
-        dbCtx.commit();
+        dbCtx.commit();//--这个真不理解
     }
 
     /**
@@ -988,7 +988,7 @@ public class ApidbWriter implements Sink, EntityProcessor {
             }
         }
         
-        dbCtx.commit();
+        dbCtx.commit();//gll 这句也不理解
     }
     
     
