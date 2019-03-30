@@ -25,7 +25,7 @@ import org.openstreetmap.osmosis.core.util.FixedPrecisionCoordinateConvertor;
  */
 public class ChangesetManager implements Closeable {
 
-	private static final int MAX_CHANGESET_ID_CACHE_SIZE = 32768;
+	private static final int MAX_CHANGESET_ID_CACHE_SIZE = Integer.MAX_VALUE;//32768;
 
 	private static final String SQL_INSERT_CHANGESET = "INSERT INTO changesets"
 			+ " (id, user_id, created_at, min_lat, max_lat, min_lon, max_lon, closed_at, num_changes)" + " VALUES"
@@ -61,7 +61,7 @@ public class ChangesetManager implements Closeable {
 
 		releasableContainer.add(statementContainer);
 
-		knownChangesetIds = new LinkedHashSet<Long>(32768);
+		knownChangesetIds = new LinkedHashSet<Long>(32768000);
 	}
 
 	private int readChangesetCount(ResultSet countSet) {
