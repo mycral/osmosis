@@ -30,7 +30,7 @@ subprojects {
 
 // Apply common configurations to all projects supporting Java.
 configure(javaProjects) {
-	apply plugin: 'checkstyle'
+	//apply plugin: 'checkstyle'
 	apply plugin: 'java'
 	apply plugin: 'jdepend'
 	apply plugin: 'maven'
@@ -56,10 +56,10 @@ configure(javaProjects) {
 		testCompile group: 'junit', name: 'junit', version: dependencyVersionJunit
 	}
 
-	checkstyle {
-		configFile = new File(rootDir, 'build-support/checkstyle.xml')
-		configProperties.samedir = configFile.parentFile
-	}
+	//checkstyle {
+	//	configFile = new File(rootDir, 'build-support/checkstyle.xml')
+	//	configProperties.samedir = configFile.parentFile
+	//}
 
 	// Build javadoc and source jars and include in published artifacts.
 	task javadocJar(type: Jar, dependsOn: javadoc) {

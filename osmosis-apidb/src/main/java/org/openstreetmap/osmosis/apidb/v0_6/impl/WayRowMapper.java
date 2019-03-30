@@ -8,15 +8,13 @@ import org.openstreetmap.osmosis.core.database.RowMapperListener;
 import org.openstreetmap.osmosis.core.domain.v0_6.CommonEntityData;
 import org.openstreetmap.osmosis.core.domain.v0_6.Way;
 
-
 /**
  * Maps way result set rows into way objects.
  */
 public class WayRowMapper implements RowMapperListener<CommonEntityData> {
-	
+
 	private RowMapperListener<Way> listener;
-	
-	
+
 	/**
 	 * Creates a new instance.
 	 * 
@@ -27,16 +25,15 @@ public class WayRowMapper implements RowMapperListener<CommonEntityData> {
 		this.listener = listener;
 	}
 
-
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
 	public void process(CommonEntityData data, ResultSet resultSet) throws SQLException {
 		Way way;
-		
-        way = new Way(data);
-        
-        listener.process(way, resultSet);
+
+		way = new Way(data);
+
+		listener.process(way, resultSet);
 	}
 }

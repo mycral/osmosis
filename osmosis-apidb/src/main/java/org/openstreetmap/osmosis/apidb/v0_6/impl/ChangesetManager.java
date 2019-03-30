@@ -18,128 +18,122 @@ import org.openstreetmap.osmosis.core.lifecycle.ReleasableContainer;
 import org.openstreetmap.osmosis.core.util.FixedPrecisionCoordinateConvertor;
 
 /**
- * Creates and maintains changesets for a database conversation. This will create a separate
- * changeset for each user id making changes.
+ * Creates and maintains changesets for a database conversation. This will
+ * create a separate changeset for each user id making changes.
  * 
  * @author Brett Henderson
  */
 public class ChangesetManager implements Closeable {
-	
+
 	private static final int MAX_CHANGESET_ID_CACHE_SIZE = 32768;
 
-    private static final String SQL_INSERT_CHANGESET = "INSERT INTO changesets"
-            + " (id, user_id, created_at, min_lat, max_lat, min_lon, max_lon, closed_at, num_changes)" + " VALUES"
-            + " (?, ?, NOW(), " + FixedPrecisionCoordinateConvertor.convertToFixed(-90) + ", "
-            + FixedPrecisionCoordinateConvertor.convertToFixed(90) + ", "
-            + FixedPrecisionCoordinateConvertor.convertToFixed(-180) + ", "
-            + FixedPrecisionCoordinateConvertor.convertToFixed(180) + ", NOW(), 0)";
+	private static final String SQL_INSERT_CHANGESET = "INSERT INTO changesets"
+			+ " (id, user_id, created_at, min_lat, max_lat, min_lon, max_lon, closed_at, num_changes)" + " VALUES"
+			+ " (?, ?, NOW(), " + FixedPrecisionCoordinateConvertor.convertToFixed(-90) + ", "
+			+ FixedPrecisionCoordinateConvertor.convertToFixed(90) + ", "
+			+ FixedPrecisionCoordinateConvertor.convertToFixed(-180) + ", "
+			+ FixedPrecisionCoordinateConvertor.convertToFixed(180) + ", NOW(), 0)";
 
-    private static final String SQL_INSERT_CHANGESET_TAG = "INSERT INTO changeset_tags (changeset_id, k, v)"
-            + " VALUES (?, 'created_by', 'Osmosis " + OsmosisConstants.VERSION + "'), (?, 'replication', 'true')";
-    
-    private static final String SQL_SELECT_CHANGESET_COUNT =
-    	"SELECT Count(*) AS changesetCount FROM changesets WHERE id = ?";
-    
-    
-    private final DatabaseContext dbCtx;
-    private final ReleasableContainer releasableContainer;
-    private final ReleasableStatementContainer statementContainer;
-    private PreparedStatement insertStatement;
-    private PreparedStatement insertTagStatement;
-    private PreparedStatement selectCountStatement;
-    private Set<Long> knownChangesetIds;
-    
-    
-    /**
-     * Creates a new instance.
-     * 
-     * @param dbCtx The database context to use for all database access.
-     */
-    public ChangesetManager(DatabaseContext dbCtx) {
-        this.dbCtx = dbCtx;
+	private static final String SQL_INSERT_CHANGESET_TAG = "INSERT INTO changeset_tags (changeset_id, k, v)"
+			+ " VALUES (?, 'created_by', 'Osmosis " + OsmosisConstants.VERSION + "'), (?, 'replication', 'true')";
 
-        releasableContainer = new ReleasableContainer();
-        statementContainer = new ReleasableStatementContainer();
+	private static final String SQL_SELECT_CHANGESET_COUNT = "SELECT Count(*) AS changesetCount FROM changesets WHERE id = ?";
 
-        releasableContainer.add(statementContainer);
-        
-        knownChangesetIds = new LinkedHashSet<Long>(32768);
-    }
-    
-    
-    private int readChangesetCount(ResultSet countSet) {
-    	try (ResultSet resultSet = countSet) {
-            resultSet.next();
-    		return resultSet.getInt("changesetCount");
-    	} catch (SQLException e) {
-    		throw new OsmosisRuntimeException("Unable to read the changeset count.", e);
-    	}
-    }
-    
-    
-    private boolean doesChangesetExist(long changesetId) {
-    	if (knownChangesetIds.contains(changesetId)) {
-    		return true;
-    	}
-    	
-        if (selectCountStatement == null) {
-        	selectCountStatement = statementContainer.add(dbCtx
-					.prepareStatementForStreaming(SQL_SELECT_CHANGESET_COUNT));
-        }
-        
-        try {
-            int prmIndex;
-            boolean changesetExists;
-            
-            // Check if the changeset exists.
-            prmIndex = 1;
-            selectCountStatement.setLong(prmIndex++, changesetId);
-            
-            changesetExists = readChangesetCount(selectCountStatement.executeQuery()) > 0;
-            
-            return changesetExists;
+	private final DatabaseContext dbCtx;
+	private final ReleasableContainer releasableContainer;
+	private final ReleasableStatementContainer statementContainer;
+	private PreparedStatement insertStatement;
+	private PreparedStatement insertTagStatement;
+	private PreparedStatement selectCountStatement;
+	private Set<Long> knownChangesetIds;
 
-        } catch (SQLException e) {
-            throw new OsmosisRuntimeException("Unable to check if a changeset " + changesetId + " exists.", e);
-        }
-    }
-    
-    
-    private void addChangeset(long changesetId, long userId) {
-        if (insertStatement == null) {
-            insertStatement = statementContainer.add(dbCtx.prepareStatement(SQL_INSERT_CHANGESET));
-            insertTagStatement = statementContainer.add(dbCtx.prepareStatement(SQL_INSERT_CHANGESET_TAG));
-        }
+	/**
+	 * Creates a new instance.
+	 * 
+	 * @param dbCtx
+	 *            The database context to use for all database access.
+	 */
+	public ChangesetManager(DatabaseContext dbCtx) {
+		this.dbCtx = dbCtx;
 
-        try {
-            int prmIndex;
+		releasableContainer = new ReleasableContainer();
+		statementContainer = new ReleasableStatementContainer();
 
-            // Insert the new changeset record.
-            prmIndex = 1;
-            insertStatement.setLong(prmIndex++, changesetId);
-            insertStatement.setLong(prmIndex++, userId);
-            insertStatement.executeUpdate();
+		releasableContainer.add(statementContainer);
 
-            // Insert the changeset tags.
-            prmIndex = 1;
-            insertTagStatement.setLong(prmIndex++, changesetId);
-            insertTagStatement.setLong(prmIndex++, changesetId);
-            insertTagStatement.executeUpdate();
-            
-            // Add the changeset to the cache, and trim the cache if required.
-            knownChangesetIds.add(changesetId);
-            if (knownChangesetIds.size() > MAX_CHANGESET_ID_CACHE_SIZE) {
-            	Iterator<Long> i = knownChangesetIds.iterator();
-            	
-            	i.next();
-            	i.remove();
-            }
+		knownChangesetIds = new LinkedHashSet<Long>(32768);
+	}
 
-        } catch (SQLException e) {
-            throw new OsmosisRuntimeException("Unable to insert a new changeset for user with id " + userId + ".", e);
-        }
-    }
+	private int readChangesetCount(ResultSet countSet) {
+		try (ResultSet resultSet = countSet) {
+			resultSet.next();
+			return resultSet.getInt("changesetCount");
+		} catch (SQLException e) {
+			throw new OsmosisRuntimeException("Unable to read the changeset count.", e);
+		}
+	}
 
+	private boolean doesChangesetExist(long changesetId) {
+		if (knownChangesetIds.contains(changesetId)) {
+			return true;
+		}
+
+		if (selectCountStatement == null) {
+			selectCountStatement = statementContainer
+					.add(dbCtx.prepareStatementForStreaming(SQL_SELECT_CHANGESET_COUNT));
+		}
+
+		try {
+			int prmIndex;
+			boolean changesetExists;
+
+			// Check if the changeset exists.
+			prmIndex = 1;
+			selectCountStatement.setLong(prmIndex++, changesetId);
+
+			changesetExists = readChangesetCount(selectCountStatement.executeQuery()) > 0;
+
+			return changesetExists;
+
+		} catch (SQLException e) {
+			throw new OsmosisRuntimeException("Unable to check if a changeset " + changesetId + " exists.", e);
+		}
+	}
+
+	private void addChangeset(long changesetId, long userId) {
+		if (insertStatement == null) {
+			insertStatement = statementContainer.add(dbCtx.prepareStatement(SQL_INSERT_CHANGESET));
+			insertTagStatement = statementContainer.add(dbCtx.prepareStatement(SQL_INSERT_CHANGESET_TAG));
+		}
+
+		try {
+			int prmIndex;
+
+			// Insert the new changeset record.
+			prmIndex = 1;
+			insertStatement.setLong(prmIndex++, changesetId);
+			insertStatement.setLong(prmIndex++, userId);
+			insertStatement.executeUpdate();
+
+			// Insert the changeset tags.
+			prmIndex = 1;
+			insertTagStatement.setLong(prmIndex++, changesetId);
+			insertTagStatement.setLong(prmIndex++, changesetId);
+			insertTagStatement.executeUpdate();
+
+			// Add the changeset to the cache, and trim the cache if required.
+			knownChangesetIds.add(changesetId);
+			if (knownChangesetIds.size() > MAX_CHANGESET_ID_CACHE_SIZE) {
+				Iterator<Long> i = knownChangesetIds.iterator();
+
+				i.next();
+				i.remove();
+			}
+
+		} catch (SQLException e) {
+			throw new OsmosisRuntimeException("Unable to insert a new changeset for user with id " + userId + ".", e);
+		}
+	}
 
 	/**
 	 * Checks to see if the changeset already exists and adds it if it doesn't.
@@ -149,18 +143,17 @@ public class ChangesetManager implements Closeable {
 	 * @param user
 	 *            The user who created the changeset.
 	 */
-    public void addChangesetIfRequired(long changesetId, OsmUser user) {
-    	if (!doesChangesetExist(changesetId)) {
-    		addChangeset(changesetId, user.getId());
-    	}
-    }
-    
+	public void addChangesetIfRequired(long changesetId, OsmUser user) {
+		if (!doesChangesetExist(changesetId)) {
+			addChangeset(changesetId, user.getId());
+		}
+	}
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void close() {
-        releasableContainer.close();
-    }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void close() {
+		releasableContainer.close();
+	}
 }

@@ -10,7 +10,6 @@ import org.openstreetmap.osmosis.core.lifecycle.ReleasableIterator;
 import org.openstreetmap.osmosis.core.store.PeekableIterator;
 import org.openstreetmap.osmosis.core.store.Storeable;
 
-
 /**
  * Populates entities with their features using a sorted data source.
  * 
@@ -19,16 +18,15 @@ import org.openstreetmap.osmosis.core.store.Storeable;
  * @param <Tf>
  *            The type of feature to be added.
  * @param <Tdbf>
- *            The database feature class type. This is extensible to allow other attributes to be
- *            added to features such as a sequence number.
+ *            The database feature class type. This is extensible to allow other
+ *            attributes to be added to features such as a sequence number.
  */
-public class FeatureHistoryPopulator<Te extends Entity, Tf extends Storeable, Tdbf extends DbFeature<Tf>> implements
-		FeaturePopulator<Te> {
-	
+public class FeatureHistoryPopulator<Te extends Entity, Tf extends Storeable, Tdbf extends DbFeature<Tf>>
+		implements FeaturePopulator<Te> {
+
 	private PeekableIterator<DbFeatureHistory<Tdbf>> source;
 	private FeatureCollectionLoader<Te, Tf> featureLoader;
-	
-	
+
 	/**
 	 * Creates a new instance.
 	 * 
@@ -43,20 +41,17 @@ public class FeatureHistoryPopulator<Te extends Entity, Tf extends Storeable, Td
 		this.featureLoader = featureLoader;
 	}
 
-
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
 	public void populateFeatures(Te entity) {
 		// Add all applicable tags to the entity.
-		while (source.hasNext()
-				&& source.peekNext().getFeature().getEntityId() == entity.getId()
+		while (source.hasNext() && source.peekNext().getFeature().getEntityId() == entity.getId()
 				&& source.peekNext().getVersion() == entity.getVersion()) {
 			featureLoader.getFeatureCollection(entity).add(source.next().getFeature().getFeature());
 		}
 	}
-
 
 	/**
 	 * {@inheritDoc}

@@ -5,7 +5,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.openstreetmap.osmosis.replication.common.ReplicationSequenceFormatter;
 
-
 /**
  * Tests the replication file sequence formatter.
  */
@@ -19,15 +18,15 @@ public class ReplicationSequenceFormatterTest {
 		final int groupingLength = 0;
 		final long sequenceNumber = 100;
 		String formattedSequenceNumber;
-		
-		formattedSequenceNumber =
-			new ReplicationSequenceFormatter(minimumLength, groupingLength).getFormattedName(sequenceNumber, ".osc.gz");
+
+		formattedSequenceNumber = new ReplicationSequenceFormatter(minimumLength, groupingLength)
+				.getFormattedName(sequenceNumber, ".osc.gz");
 		Assert.assertEquals("The formatted sequence number is incorrect.", "100.osc.gz", formattedSequenceNumber);
 	}
-	
-	
+
 	/**
-	 * Tests that a number can be formatted correctly when using a simple 0 padded format.
+	 * Tests that a number can be formatted correctly when using a simple 0 padded
+	 * format.
 	 */
 	@Test
 	public void testFixedFormat() {
@@ -35,15 +34,15 @@ public class ReplicationSequenceFormatterTest {
 		final int groupingLength = 0;
 		final long sequenceNumber = 100;
 		String formattedSequenceNumber;
-		
-		formattedSequenceNumber =
-			new ReplicationSequenceFormatter(minimumLength, groupingLength).getFormattedName(sequenceNumber, ".osc.gz");
+
+		formattedSequenceNumber = new ReplicationSequenceFormatter(minimumLength, groupingLength)
+				.getFormattedName(sequenceNumber, ".osc.gz");
 		Assert.assertEquals("The formatted sequence number is incorrect.", "000000100.osc.gz", formattedSequenceNumber);
 	}
-	
-	
+
 	/**
-	 * Tests that a number can be formatted correctly when including path separators with no fixed width.
+	 * Tests that a number can be formatted correctly when including path separators
+	 * with no fixed width.
 	 */
 	@Test
 	public void testMinimalPathFormat() {
@@ -51,15 +50,15 @@ public class ReplicationSequenceFormatterTest {
 		final int groupingLength = 3;
 		final long sequenceNumber = 1000;
 		String formattedSequenceNumber;
-		
-		formattedSequenceNumber =
-			new ReplicationSequenceFormatter(minimumLength, groupingLength).getFormattedName(sequenceNumber, ".osc.gz");
+
+		formattedSequenceNumber = new ReplicationSequenceFormatter(minimumLength, groupingLength)
+				.getFormattedName(sequenceNumber, ".osc.gz");
 		Assert.assertEquals("The formatted sequence number is incorrect.", "1/000.osc.gz", formattedSequenceNumber);
 	}
-	
-	
+
 	/**
-	 * Tests that a number can be formatted correctly when including path separators and a fixed width.
+	 * Tests that a number can be formatted correctly when including path separators
+	 * and a fixed width.
 	 */
 	@Test
 	public void testFixedPathFormat() {
@@ -67,9 +66,9 @@ public class ReplicationSequenceFormatterTest {
 		final int groupingLength = 3;
 		final long sequenceNumber = 100;
 		String formattedSequenceNumber;
-		
-		formattedSequenceNumber =
-			new ReplicationSequenceFormatter(minimumLength, groupingLength).getFormattedName(sequenceNumber, ".osc.gz");
+
+		formattedSequenceNumber = new ReplicationSequenceFormatter(minimumLength, groupingLength)
+				.getFormattedName(sequenceNumber, ".osc.gz");
 		Assert.assertEquals("The formatted sequence number is incorrect.", "000/000/100.osc.gz",
 				formattedSequenceNumber);
 	}

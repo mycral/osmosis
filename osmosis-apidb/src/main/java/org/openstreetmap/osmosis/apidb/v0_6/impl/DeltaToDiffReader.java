@@ -9,33 +9,30 @@ import org.openstreetmap.osmosis.core.lifecycle.ReleasableIterator;
 import org.openstreetmap.osmosis.core.store.PeekableIterator;
 import org.openstreetmap.osmosis.core.task.common.ChangeAction;
 
-
 /**
- * Takes an underlying full history delta stream and converts it into a diff stream. The difference
- * between the two is that a delta stream may contain multiple changes for a single entity, a diff
- * stream will contain a single change for the entity to get from the beginning to end point.
+ * Takes an underlying full history delta stream and converts it into a diff
+ * stream. The difference between the two is that a delta stream may contain
+ * multiple changes for a single entity, a diff stream will contain a single
+ * change for the entity to get from the beginning to end point.
  */
 public class DeltaToDiffReader implements ReleasableIterator<ChangeContainer> {
-	
+
 	private PeekableIterator<List<ChangeContainer>> sourceIterator;
 	private ChangeContainer nextValue;
 	private boolean nextValueLoaded;
-	
-	
+
 	/**
 	 * Creates a new instance.
 	 * 
 	 * @param sourceIterator
 	 *            An iterator containing the full history for entities.
 	 */
-	public DeltaToDiffReader(
-			ReleasableIterator<ChangeContainer> sourceIterator) {
+	public DeltaToDiffReader(ReleasableIterator<ChangeContainer> sourceIterator) {
 		this.sourceIterator = new PeekableIterator<List<ChangeContainer>>(new EntityHistoryListReader(sourceIterator));
-		
+
 		nextValueLoaded = false;
 	}
-	
-	
+
 	/**
 	 * {@inheritDoc}
 	 */
@@ -44,19 +41,20 @@ public class DeltaToDiffReader implements ReleasableIterator<ChangeContainer> {
 			List<ChangeContainer> changeList;
 			ChangeContainer changeContainer;
 			boolean createdPreviously;
-			
+
 			// Get the next change list from the underlying stream.
 			changeList = sourceIterator.next();
-			
+
 			// Check the first node, if it has a version greater than 1 the node
 			// existed prior to the interval beginning and therefore cannot be a
 			// create.
 			createdPreviously = (changeList.get(0).getEntityContainer().getEntity().getVersion() > 1);
-			
+
 			// Get the most current change.
 			changeContainer = changeList.get(changeList.size() - 1);
-			
-			// The entity has been modified if it is a create/modify and was created previously.
+
+			// The entity has been modified if it is a create/modify and was created
+			// previously.
 			// It is a create if it is create/modify and was NOT created previously.
 			// It is a delete if it is a delete and was created previously.
 			// No action if it is a delete and was NOT created previously.
@@ -71,11 +69,10 @@ public class DeltaToDiffReader implements ReleasableIterator<ChangeContainer> {
 				nextValueLoaded = true;
 			}
 		}
-		
+
 		return nextValueLoaded;
 	}
-	
-	
+
 	/**
 	 * {@inheritDoc}
 	 */
@@ -83,21 +80,19 @@ public class DeltaToDiffReader implements ReleasableIterator<ChangeContainer> {
 		if (!hasNext()) {
 			throw new NoSuchElementException();
 		}
-		
+
 		nextValueLoaded = false;
-		
+
 		return nextValue;
 	}
-	
-	
+
 	/**
 	 * {@inheritDoc}
 	 */
 	public void remove() {
 		throw new UnsupportedOperationException();
 	}
-	
-	
+
 	/**
 	 * {@inheritDoc}
 	 */

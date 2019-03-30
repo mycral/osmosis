@@ -8,7 +8,6 @@ import org.openstreetmap.osmosis.core.container.v0_6.RelationContainer;
 import org.openstreetmap.osmosis.core.container.v0_6.WayContainer;
 import org.openstreetmap.osmosis.core.task.common.ChangeAction;
 
-
 /**
  * Writes entities to a database according to a specific action.
  * 
@@ -17,8 +16,7 @@ import org.openstreetmap.osmosis.core.task.common.ChangeAction;
 public class ActionChangeWriter implements EntityProcessor {
 	private ChangeWriter changeWriter;
 	private ChangeAction action;
-	
-	
+
 	/**
 	 * Creates a new instance.
 	 * 
@@ -31,32 +29,28 @@ public class ActionChangeWriter implements EntityProcessor {
 		this.changeWriter = changeWriter;
 		this.action = action;
 	}
-	
-	
+
 	/**
-     * {@inheritDoc}
-     */
-    public void process(BoundContainer bound) {
-        // Do nothing.
-    }
-    
-    
+	 * {@inheritDoc}
+	 */
+	public void process(BoundContainer bound) {
+		// Do nothing.
+	}
+
 	/**
 	 * {@inheritDoc}
 	 */
 	public void process(NodeContainer nodeContainer) {
 		changeWriter.write(nodeContainer.getEntity(), action);
 	}
-	
-	
+
 	/**
 	 * {@inheritDoc}
 	 */
 	public void process(WayContainer wayContainer) {
 		changeWriter.write(wayContainer.getEntity(), action);
 	}
-	
-	
+
 	/**
 	 * {@inheritDoc}
 	 */

@@ -7,7 +7,6 @@ import java.util.Map;
 import org.openstreetmap.osmosis.core.OsmosisRuntimeException;
 import org.openstreetmap.osmosis.core.domain.v0_6.EntityType;
 
-
 /**
  * Parses the database representation of a relation member type into an entity
  * type object.
@@ -15,19 +14,18 @@ import org.openstreetmap.osmosis.core.domain.v0_6.EntityType;
  * @author Brett Henderson
  */
 public class MemberTypeParser {
-	
+
 	private static final Map<String, EntityType> MEMBER_TYPE_MAP = new HashMap<String, EntityType>();
-	
+
 	static {
 		MEMBER_TYPE_MAP.put("Node", EntityType.Node);
 		MEMBER_TYPE_MAP.put("Way", EntityType.Way);
 		MEMBER_TYPE_MAP.put("Relation", EntityType.Relation);
 	}
-	
-	
+
 	/**
-	 * Parses the database representation of a relation member type into an
-	 * entity type object.
+	 * Parses the database representation of a relation member type into an entity
+	 * type object.
 	 * 
 	 * @param memberType
 	 *            The database value of member type.

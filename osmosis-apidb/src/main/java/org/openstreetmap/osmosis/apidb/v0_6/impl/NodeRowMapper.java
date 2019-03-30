@@ -9,15 +9,13 @@ import org.openstreetmap.osmosis.core.domain.v0_6.CommonEntityData;
 import org.openstreetmap.osmosis.core.domain.v0_6.Node;
 import org.openstreetmap.osmosis.core.util.FixedPrecisionCoordinateConvertor;
 
-
 /**
  * Maps node result set rows into node objects.
  */
 public class NodeRowMapper implements RowMapperListener<CommonEntityData> {
-	
+
 	private RowMapperListener<Node> listener;
-	
-	
+
 	/**
 	 * Creates a new instance.
 	 * 
@@ -28,7 +26,6 @@ public class NodeRowMapper implements RowMapperListener<CommonEntityData> {
 		this.listener = listener;
 	}
 
-
 	/**
 	 * {@inheritDoc}
 	 */
@@ -37,12 +34,12 @@ public class NodeRowMapper implements RowMapperListener<CommonEntityData> {
 		double latitude;
 		double longitude;
 		Node node;
-		
+
 		latitude = FixedPrecisionCoordinateConvertor.convertToDouble(resultSet.getInt("latitude"));
-        longitude = FixedPrecisionCoordinateConvertor.convertToDouble(resultSet.getInt("longitude"));
-		
-        node = new Node(data, latitude, longitude);
-        
-        listener.process(node, resultSet);
+		longitude = FixedPrecisionCoordinateConvertor.convertToDouble(resultSet.getInt("longitude"));
+
+		node = new Node(data, latitude, longitude);
+
+		listener.process(node, resultSet);
 	}
 }

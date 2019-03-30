@@ -18,21 +18,19 @@ import org.openstreetmap.osmosis.core.task.v0_6.Sink;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 
-
 /**
- * An OSM data source reading from a databases current tables. The entire contents of the database
- * are read.
+ * An OSM data source reading from a databases current tables. The entire
+ * contents of the database are read.
  * 
  * @author Brett Henderson
  */
 public class ApidbCurrentReader implements RunnableSource {
 
-    private Sink sink;
-    private DatabaseLoginCredentials loginCredentials;
-    private DatabasePreferences preferences;
+	private Sink sink;
+	private DatabaseLoginCredentials loginCredentials;
+	private DatabasePreferences preferences;
 
-
-    /**
+	/**
 	 * Creates a new instance.
 	 * 
 	 * @param loginCredentials
@@ -40,63 +38,62 @@ public class ApidbCurrentReader implements RunnableSource {
 	 * @param preferences
 	 *            Contains preferences configuring database behaviour.
 	 */
-    public ApidbCurrentReader(DatabaseLoginCredentials loginCredentials, DatabasePreferences preferences) {
-        this.loginCredentials = loginCredentials;
-        this.preferences = preferences;
-    }
+	public ApidbCurrentReader(DatabaseLoginCredentials loginCredentials, DatabasePreferences preferences) {
+		this.loginCredentials = loginCredentials;
+		this.preferences = preferences;
+	}
 
+	/**
+	 * {@inheritDoc}
+	 */
+	public void setSink(Sink sink) {
+		this.sink = sink;
+	}
 
-    /**
-     * {@inheritDoc}
-     */
-    public void setSink(Sink sink) {
-        this.sink = sink;
-    }
-    
-    
-    /**
-	 * Runs the task implementation. This is called by the run method within a transaction.
+	/**
+	 * Runs the task implementation. This is called by the run method within a
+	 * transaction.
 	 * 
 	 * @param dbCtx
 	 *            Used to access the database.
 	 */
-    protected void runImpl(DatabaseContext2 dbCtx) {
-    	try {
-    		AllEntityDao entityDao;
-    		
-    		sink.initialize(Collections.<String, Object>emptyMap());
-    		
-	        new SchemaVersionValidator(loginCredentials, preferences)
-	                .validateVersion(ApidbVersionConstants.SCHEMA_MIGRATIONS);
-	        
-	        entityDao = new AllEntityDao(dbCtx.getJdbcTemplate());
-	        
-	        sink.process(new BoundContainer(new Bound("Osmosis " + OsmosisConstants.VERSION)));
-	        try (ReleasableIterator<EntityContainer> reader = entityDao.getCurrent()) {
-	        	while (reader.hasNext()) {
-	        		sink.process(reader.next());
-	        	}
-	        }
-	
-	        sink.complete();
-	        
-    	} finally {
-    		sink.close();
-    	}
-    }
-    
+	protected void runImpl(DatabaseContext2 dbCtx) {
+		try {
+			AllEntityDao entityDao;
 
-    /**
-     * Reads all data from the database and send it to the sink.
-     */
-    public void run() {
-        try (DatabaseContext2 dbCtx = new DatabaseContext2(loginCredentials)) {
-        	dbCtx.executeWithinTransaction(new TransactionCallbackWithoutResult() {
+			sink.initialize(Collections.<String, Object>emptyMap());
+
+			new SchemaVersionValidator(loginCredentials, preferences)
+					.validateVersion(ApidbVersionConstants.SCHEMA_MIGRATIONS);
+
+			entityDao = new AllEntityDao(dbCtx.getJdbcTemplate());
+
+			sink.process(new BoundContainer(new Bound("Osmosis " + OsmosisConstants.VERSION)));
+			try (ReleasableIterator<EntityContainer> reader = entityDao.getCurrent()) {
+				while (reader.hasNext()) {
+					sink.process(reader.next());
+				}
+			}
+
+			sink.complete();
+
+		} finally {
+			sink.close();
+		}
+	}
+
+	/**
+	 * Reads all data from the database and send it to the sink.
+	 */
+	public void run() {
+		try (DatabaseContext2 dbCtx = new DatabaseContext2(loginCredentials)) {
+			dbCtx.executeWithinTransaction(new TransactionCallbackWithoutResult() {
 
 				@Override
 				protected void doInTransactionWithoutResult(TransactionStatus arg0) {
 					runImpl(dbCtx);
-				} });
-        }
-    }
+				}
+			});
+		}
+	}
 }

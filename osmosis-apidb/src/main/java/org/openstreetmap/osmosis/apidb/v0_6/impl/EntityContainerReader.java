@@ -9,7 +9,8 @@ import org.openstreetmap.osmosis.core.domain.v0_6.Entity;
 import org.openstreetmap.osmosis.core.lifecycle.ReleasableIterator;
 
 /**
- * Wraps a stream of entity history objects into entity containers.  Only visible items will be returned.
+ * Wraps a stream of entity history objects into entity containers. Only visible
+ * items will be returned.
  * 
  * @param <T>
  *            The type of entity provided by this iterator.
@@ -21,7 +22,6 @@ public class EntityContainerReader<T extends Entity> implements ReleasableIterat
 	private EntityContainer nextValue;
 	private boolean nextValueLoaded;
 
-
 	/**
 	 * Creates a new instance.
 	 * 
@@ -30,12 +30,11 @@ public class EntityContainerReader<T extends Entity> implements ReleasableIterat
 	 * @param containerFactory
 	 *            The factory for wrapping entity objects into containers.
 	 */
-	public EntityContainerReader(
-			ReleasableIterator<EntityHistory<T>> source, EntityContainerFactory<T> containerFactory) {
+	public EntityContainerReader(ReleasableIterator<EntityHistory<T>> source,
+			EntityContainerFactory<T> containerFactory) {
 		this.source = source;
 		this.containerFactory = containerFactory;
 	}
-
 
 	/**
 	 * {@inheritDoc}
@@ -44,19 +43,18 @@ public class EntityContainerReader<T extends Entity> implements ReleasableIterat
 	public boolean hasNext() {
 		while (!nextValueLoaded && source.hasNext()) {
 			T entity;
-			
+
 			// Get the entity from the underlying source.
 			entity = source.next().getEntity();
-			
+
 			// Wrap the entity in a container.
 			nextValue = containerFactory.createContainer(entity);
-			
+
 			nextValueLoaded = true;
 		}
-		
+
 		return nextValueLoaded;
 	}
-
 
 	/**
 	 * {@inheritDoc}
@@ -66,12 +64,11 @@ public class EntityContainerReader<T extends Entity> implements ReleasableIterat
 		if (!hasNext()) {
 			throw new NoSuchElementException();
 		}
-		
+
 		nextValueLoaded = false;
-		
+
 		return nextValue;
 	}
-
 
 	/**
 	 * {@inheritDoc}
@@ -80,7 +77,6 @@ public class EntityContainerReader<T extends Entity> implements ReleasableIterat
 	public void remove() {
 		throw new UnsupportedOperationException();
 	}
-
 
 	/**
 	 * {@inheritDoc}

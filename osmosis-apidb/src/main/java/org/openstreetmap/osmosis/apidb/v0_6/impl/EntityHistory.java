@@ -8,7 +8,6 @@ import org.openstreetmap.osmosis.core.store.StoreReader;
 import org.openstreetmap.osmosis.core.store.StoreWriter;
 import org.openstreetmap.osmosis.core.store.Storeable;
 
-
 /**
  * A data class representing a history record.
  * 
@@ -17,11 +16,10 @@ import org.openstreetmap.osmosis.core.store.Storeable;
  *            The type of entity that this class stores history for.
  */
 public class EntityHistory<T extends Storeable> implements Storeable {
-	
+
 	private T entity;
 	private boolean visible;
-	
-	
+
 	/**
 	 * Creates a new instance.
 	 * 
@@ -34,25 +32,23 @@ public class EntityHistory<T extends Storeable> implements Storeable {
 		this.entity = entity;
 		this.visible = visible;
 	}
-	
-	
+
 	/**
 	 * Creates a new instance.
 	 * 
 	 * @param sr
 	 *            The store to read state from.
 	 * @param scr
-	 *            Maintains the mapping between classes and their identifiers
-	 *            within the store.
+	 *            Maintains the mapping between classes and their identifiers within
+	 *            the store.
 	 */
 	@SuppressWarnings("unchecked")
 	public EntityHistory(StoreReader sr, StoreClassRegister scr) {
 		entity = (T) new GenericObjectReader(sr, scr).readObject();
-		
+
 		visible = sr.readBoolean();
 	}
-	
-	
+
 	/**
 	 * {@inheritDoc}
 	 */
@@ -60,8 +56,7 @@ public class EntityHistory<T extends Storeable> implements Storeable {
 		new GenericObjectWriter(sw, scr).writeObject(entity);
 		sw.writeBoolean(visible);
 	}
-	
-	
+
 	/**
 	 * Gets the contained entity.
 	 * 
@@ -70,8 +65,7 @@ public class EntityHistory<T extends Storeable> implements Storeable {
 	public T getEntity() {
 		return entity;
 	}
-	
-	
+
 	/**
 	 * Gets the visible flag.
 	 * 

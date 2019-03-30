@@ -14,7 +14,6 @@ import org.openstreetmap.osmosis.apidb.v0_6.ApidbWriterFactory;
 import org.openstreetmap.osmosis.core.pipeline.common.TaskManagerFactory;
 import org.openstreetmap.osmosis.core.plugin.PluginLoader;
 
-
 /**
  * The plugin loader for the API Schema tasks.
  * 
@@ -28,9 +27,9 @@ public class ApidbPluginLoader implements PluginLoader {
 	@Override
 	public Map<String, TaskManagerFactory> loadTaskFactories() {
 		Map<String, TaskManagerFactory> factoryMap;
-		
+
 		factoryMap = new HashMap<String, TaskManagerFactory>();
-		
+
 		factoryMap.put("read-apidb", new ApidbReaderFactory());
 		factoryMap.put("rd", new ApidbReaderFactory());
 		factoryMap.put("read-apidb-change", new ApidbChangeReaderFactory());
@@ -45,7 +44,7 @@ public class ApidbPluginLoader implements PluginLoader {
 		factoryMap.put("td", new ApidbTruncatorFactory());
 		factoryMap.put("replicate-apidb", new ApidbFileReplicatorFactory());
 		factoryMap.put("repa", new ApidbFileReplicatorFactory());
-		
+
 		factoryMap.put("read-apidb-0.6", new ApidbReaderFactory());
 		factoryMap.put("read-apidb-change-0.6", new ApidbChangeReaderFactory());
 		factoryMap.put("read-apidb-current-0.6", new ApidbCurrentReaderFactory());
@@ -53,7 +52,7 @@ public class ApidbPluginLoader implements PluginLoader {
 		factoryMap.put("write-apidb-change-0.6", new ApidbChangeWriterFactory());
 		factoryMap.put("truncate-apidb-0.6", new ApidbTruncatorFactory());
 		factoryMap.put("replicate-apidb-0.6", new ApidbFileReplicatorFactory());
-		
+
 		return factoryMap;
 	}
 }

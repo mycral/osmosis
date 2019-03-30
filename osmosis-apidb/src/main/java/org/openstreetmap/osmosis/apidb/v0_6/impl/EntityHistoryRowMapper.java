@@ -7,7 +7,6 @@ import java.sql.SQLException;
 import org.openstreetmap.osmosis.core.database.RowMapperListener;
 import org.openstreetmap.osmosis.core.domain.v0_6.Entity;
 
-
 /**
  * Maps entity history result set rows into entity history objects.
  * 
@@ -15,10 +14,9 @@ import org.openstreetmap.osmosis.core.domain.v0_6.Entity;
  *            The type of entity to be processed.
  */
 public class EntityHistoryRowMapper<T extends Entity> implements RowMapperListener<T> {
-	
+
 	private RowMapperListener<EntityHistory<T>> listener;
-	
-	
+
 	/**
 	 * Creates a new instance.
 	 * 
@@ -28,7 +26,6 @@ public class EntityHistoryRowMapper<T extends Entity> implements RowMapperListen
 	public EntityHistoryRowMapper(RowMapperListener<EntityHistory<T>> listener) {
 		this.listener = listener;
 	}
-	
 
 	/**
 	 * {@inheritDoc}
@@ -37,11 +34,11 @@ public class EntityHistoryRowMapper<T extends Entity> implements RowMapperListen
 	public void process(T data, ResultSet resultSet) throws SQLException {
 		boolean visible;
 		EntityHistory<T> entityHistory;
-		
+
 		visible = resultSet.getBoolean("visible");
-		
+
 		entityHistory = new EntityHistory<T>(data, visible);
-		
+
 		listener.process(entityHistory, resultSet);
 	}
 }

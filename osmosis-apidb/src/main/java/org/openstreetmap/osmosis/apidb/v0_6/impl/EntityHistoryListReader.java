@@ -10,25 +10,22 @@ import org.openstreetmap.osmosis.core.domain.v0_6.EntityType;
 import org.openstreetmap.osmosis.core.lifecycle.ReleasableIterator;
 import org.openstreetmap.osmosis.core.store.PeekableIterator;
 
-
 /**
  * Reads a history stream and groups all changes for a single entity into lists.
  */
 public class EntityHistoryListReader implements ReleasableIterator<List<ChangeContainer>> {
 	private PeekableIterator<ChangeContainer> sourceIterator;
 
-
 	/**
 	 * Creates a new instance.
 	 * 
 	 * @param sourceIterator
-	 *            An iterator containing full entity history ordered by type, identifier and
-	 *            version.
+	 *            An iterator containing full entity history ordered by type,
+	 *            identifier and version.
 	 */
 	public EntityHistoryListReader(ReleasableIterator<ChangeContainer> sourceIterator) {
 		this.sourceIterator = new PeekableIterator<ChangeContainer>(sourceIterator);
 	}
-
 
 	/**
 	 * {@inheritDoc}
@@ -37,7 +34,6 @@ public class EntityHistoryListReader implements ReleasableIterator<List<ChangeCo
 	public boolean hasNext() {
 		return sourceIterator.hasNext();
 	}
-
 
 	/**
 	 * {@inheritDoc}
@@ -48,33 +44,33 @@ public class EntityHistoryListReader implements ReleasableIterator<List<ChangeCo
 		Entity peekEntity;
 		long currentId;
 		EntityType currentEntityType;
-		
+
 		// Get the next change from the underlying stream.
 		peekEntity = sourceIterator.peekNext().getEntityContainer().getEntity();
 		currentId = peekEntity.getId();
 		currentEntityType = peekEntity.getType();
-		
+
 		// Loop until all history values for the current element are exhausted.
 		changeList = new ArrayList<ChangeContainer>();
 		while (sourceIterator.hasNext()) {
 			ChangeContainer tmpChangeContainer = sourceIterator.peekNext();
-			
+
 			// Break out of the loop when we reach the next entity in the stream.
 			if (currentId != tmpChangeContainer.getEntityContainer().getEntity().getId()
-				|| !currentEntityType.equals(tmpChangeContainer.getEntityContainer().getEntity().getType())) {
+					|| !currentEntityType.equals(tmpChangeContainer.getEntityContainer().getEntity().getType())) {
 				break;
 			}
-			
-			// We want the value that we have already peeked from the iterator, so remove it from the iterator.
+
+			// We want the value that we have already peeked from the iterator, so remove it
+			// from the iterator.
 			sourceIterator.next();
-			
+
 			// Add the change to the result list.
 			changeList.add(tmpChangeContainer);
 		}
-		
+
 		return changeList;
 	}
-
 
 	/**
 	 * {@inheritDoc}
@@ -83,7 +79,6 @@ public class EntityHistoryListReader implements ReleasableIterator<List<ChangeCo
 	public void remove() {
 		throw new UnsupportedOperationException();
 	}
-
 
 	/**
 	 * {@inheritDoc}

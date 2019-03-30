@@ -5,14 +5,12 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-
 /**
  * A mocked system time loader allowing canned times to be returned.
  */
 public class MockSystemTimeLoader implements SystemTimeLoader {
 
 	private List<Date> times = new ArrayList<Date>();
-
 
 	/**
 	 * Gets the currently available times.
@@ -22,7 +20,6 @@ public class MockSystemTimeLoader implements SystemTimeLoader {
 	public List<Date> getTimes() {
 		return times;
 	}
-
 
 	/**
 	 * {@inheritDoc}

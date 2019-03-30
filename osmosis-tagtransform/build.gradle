@@ -9,4 +9,4 @@ dependencies {
  * The tag transform plugin used to exist outside the main source tree and as a result
  * doesn't comply with Osmosis coding standards.
  */
-checkstyleMain.enabled = false
+//checkstyleMain.enabled = false

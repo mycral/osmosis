@@ -4,7 +4,6 @@ package org.openstreetmap.osmosis.apidb.v0_6.impl;
 import org.openstreetmap.osmosis.core.container.v0_6.ChangeContainer;
 import org.openstreetmap.osmosis.core.lifecycle.ReleasableIterator;
 
-
 /**
  * Provides {@link Replicator} with change streams that it consumes.
  */

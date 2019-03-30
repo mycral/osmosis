@@ -12,17 +12,15 @@ import org.openstreetmap.osmosis.core.lifecycle.ReleasableIterator;
 import org.openstreetmap.osmosis.core.store.MultipleSourceIterator;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-
 /**
- * Provides operations that act on on all entity types by combining operations from the underlying
- * DAO implementations.
+ * Provides operations that act on on all entity types by combining operations
+ * from the underlying DAO implementations.
  */
 public class AllEntityDao implements ReplicationSource {
 	private NodeDao nodeDao;
 	private WayDao wayDao;
 	private RelationDao relationDao;
-	
-	
+
 	/**
 	 * Creates a new instance.
 	 * 
@@ -34,8 +32,7 @@ public class AllEntityDao implements ReplicationSource {
 		wayDao = new WayDao(jdbcTemplate);
 		relationDao = new RelationDao(jdbcTemplate);
 	}
-	
-	
+
 	/**
 	 * Retrieves the changes that have were made by a set of transactions.
 	 * 
@@ -47,26 +44,26 @@ public class AllEntityDao implements ReplicationSource {
 		try (ReleasableContainer releasableContainer = new ReleasableContainer()) {
 			List<ReleasableIterator<ChangeContainer>> sources;
 			MultipleSourceIterator<ChangeContainer> resultIterator;
-			
+
 			sources = new ArrayList<ReleasableIterator<ChangeContainer>>();
 			sources.add(releasableContainer.add(nodeDao.getHistory(predicates)));
 			sources.add(releasableContainer.add(wayDao.getHistory(predicates)));
 			sources.add(releasableContainer.add(relationDao.getHistory(predicates)));
-			
+
 			resultIterator = new MultipleSourceIterator<ChangeContainer>(sources);
-			
+
 			releasableContainer.clear();
-			
+
 			return resultIterator;
 		}
 	}
-	
-	
+
 	/**
 	 * Retrieves the changes that have were made between two points in time.
 	 * 
 	 * @param intervalBegin
-	 *            Marks the beginning (inclusive) of the time interval to be checked.
+	 *            Marks the beginning (inclusive) of the time interval to be
+	 *            checked.
 	 * @param intervalEnd
 	 *            Marks the end (exclusive) of the time interval to be checked.
 	 * @return An iterator pointing at the identified records.
@@ -75,21 +72,20 @@ public class AllEntityDao implements ReplicationSource {
 		try (ReleasableContainer releasableContainer = new ReleasableContainer()) {
 			List<ReleasableIterator<ChangeContainer>> sources;
 			MultipleSourceIterator<ChangeContainer> resultIterator;
-			
+
 			sources = new ArrayList<ReleasableIterator<ChangeContainer>>();
 			sources.add(releasableContainer.add(nodeDao.getHistory(intervalBegin, intervalEnd)));
 			sources.add(releasableContainer.add(wayDao.getHistory(intervalBegin, intervalEnd)));
 			sources.add(releasableContainer.add(relationDao.getHistory(intervalBegin, intervalEnd)));
-			
+
 			resultIterator = new MultipleSourceIterator<ChangeContainer>(sources);
-			
+
 			releasableContainer.clear();
-			
+
 			return resultIterator;
 		}
 	}
-	
-	
+
 	/**
 	 * Retrieves all changes in the database.
 	 * 
@@ -99,21 +95,20 @@ public class AllEntityDao implements ReplicationSource {
 		try (ReleasableContainer releasableContainer = new ReleasableContainer()) {
 			List<ReleasableIterator<ChangeContainer>> sources;
 			MultipleSourceIterator<ChangeContainer> resultIterator;
-			
+
 			sources = new ArrayList<ReleasableIterator<ChangeContainer>>();
 			sources.add(releasableContainer.add(nodeDao.getHistory()));
 			sources.add(releasableContainer.add(wayDao.getHistory()));
 			sources.add(releasableContainer.add(relationDao.getHistory()));
-			
+
 			resultIterator = new MultipleSourceIterator<ChangeContainer>(sources);
-			
+
 			releasableContainer.clear();
-			
+
 			return resultIterator;
 		}
 	}
-	
-	
+
 	/**
 	 * Retrieves all current data in the database.
 	 * 
@@ -123,16 +118,16 @@ public class AllEntityDao implements ReplicationSource {
 		try (ReleasableContainer releasableContainer = new ReleasableContainer()) {
 			List<ReleasableIterator<EntityContainer>> sources;
 			MultipleSourceIterator<EntityContainer> resultIterator;
-			
+
 			sources = new ArrayList<ReleasableIterator<EntityContainer>>();
 			sources.add(releasableContainer.add(nodeDao.getCurrent()));
 			sources.add(releasableContainer.add(wayDao.getCurrent()));
 			sources.add(releasableContainer.add(relationDao.getCurrent()));
-			
+
 			resultIterator = new MultipleSourceIterator<EntityContainer>(sources);
-			
+
 			releasableContainer.clear();
-			
+
 			return resultIterator;
 		}
 	}

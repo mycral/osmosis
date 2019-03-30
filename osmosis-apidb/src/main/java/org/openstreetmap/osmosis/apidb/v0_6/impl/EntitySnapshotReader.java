@@ -11,38 +11,34 @@ import org.openstreetmap.osmosis.core.lifecycle.ReleasableIterator;
 import org.openstreetmap.osmosis.core.store.PeekableIterator;
 import org.openstreetmap.osmosis.core.task.common.ChangeAction;
 
-
 /**
  * Produces a snapshot at a point in time from a complete history stream.
  * 
  * @author Brett Henderson
  */
 public class EntitySnapshotReader implements ReleasableIterator<EntityContainer> {
-	
+
 	private PeekableIterator<List<ChangeContainer>> sourceIterator;
 	private Date snapshotInstant;
 	private EntityContainer nextValue;
 	private boolean nextValueLoaded;
-	
-	
+
 	/**
 	 * Creates a new instance.
 	 * 
 	 * @param sourceIterator
 	 *            An iterator containing the full history for entities.
 	 * @param snapshotInstant
-	 *            The state of the entity at this point in time will be dumped.
-	 *            This ensures a consistent snapshot.
+	 *            The state of the entity at this point in time will be dumped. This
+	 *            ensures a consistent snapshot.
 	 */
-	public EntitySnapshotReader(
-			ReleasableIterator<ChangeContainer> sourceIterator, Date snapshotInstant) {
+	public EntitySnapshotReader(ReleasableIterator<ChangeContainer> sourceIterator, Date snapshotInstant) {
 		this.sourceIterator = new PeekableIterator<List<ChangeContainer>>(new EntityHistoryListReader(sourceIterator));
 		this.snapshotInstant = snapshotInstant;
-		
+
 		nextValueLoaded = false;
 	}
-	
-	
+
 	/**
 	 * {@inheritDoc}
 	 */
@@ -50,34 +46,35 @@ public class EntitySnapshotReader implements ReleasableIterator<EntityContainer>
 		while (!nextValueLoaded && sourceIterator.hasNext()) {
 			List<ChangeContainer> changeList;
 			ChangeContainer changeContainer;
-			
+
 			// Get the next change list from the underlying stream.
 			changeList = sourceIterator.next();
-			
-			// Loop until all history values for the current element are exhausted and get the
+
+			// Loop until all history values for the current element are exhausted and get
+			// the
 			// latest version of the entity that fits within the snapshot timestamp.
 			changeContainer = null;
 			for (ChangeContainer tmpChangeContainer : changeList) {
-				
+
 				// We're only interested in elements prior or equal to the snapshot point.
-				if (tmpChangeContainer.getEntityContainer().getEntity()
-						.getTimestamp().compareTo(snapshotInstant) <= 0) {
+				if (tmpChangeContainer.getEntityContainer().getEntity().getTimestamp()
+						.compareTo(snapshotInstant) <= 0) {
 					// Replace the current change container with the later version.
 					changeContainer = tmpChangeContainer;
 				}
 			}
-			
-			// We are not interested in items created after the snapshot timestamp (ie. null) or deleted items.
+
+			// We are not interested in items created after the snapshot timestamp (ie.
+			// null) or deleted items.
 			if (changeContainer != null && !ChangeAction.Delete.equals(changeContainer.getAction())) {
 				nextValue = changeContainer.getEntityContainer();
 				nextValueLoaded = true;
 			}
 		}
-		
+
 		return nextValueLoaded;
 	}
-	
-	
+
 	/**
 	 * {@inheritDoc}
 	 */
@@ -85,21 +82,19 @@ public class EntitySnapshotReader implements ReleasableIterator<EntityContainer>
 		if (!hasNext()) {
 			throw new NoSuchElementException();
 		}
-		
+
 		nextValueLoaded = false;
-		
+
 		return nextValue;
 	}
-	
-	
+
 	/**
 	 * {@inheritDoc}
 	 */
 	public void remove() {
 		throw new UnsupportedOperationException();
 	}
-	
-	
+
 	/**
 	 * {@inheritDoc}
 	 */

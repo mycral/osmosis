@@ -8,14 +8,13 @@ import org.openstreetmap.osmosis.core.pipeline.common.TaskConfiguration;
 import org.openstreetmap.osmosis.core.pipeline.common.TaskManager;
 import org.openstreetmap.osmosis.core.pipeline.v0_6.RunnableSourceManager;
 
-
 /**
  * The task manager factory for a database reader.
  * 
  * @author Brett Henderson
  */
 public class ApidbCurrentReaderFactory extends DatabaseTaskManagerFactory {
-	
+
 	/**
 	 * {@inheritDoc}
 	 */
@@ -23,15 +22,12 @@ public class ApidbCurrentReaderFactory extends DatabaseTaskManagerFactory {
 	protected TaskManager createTaskManagerImpl(TaskConfiguration taskConfig) {
 		DatabaseLoginCredentials loginCredentials;
 		DatabasePreferences preferences;
-		
+
 		// Get the task arguments.
 		loginCredentials = getDatabaseLoginCredentials(taskConfig);
 		preferences = getDatabasePreferences(taskConfig);
-		
-		return new RunnableSourceManager(
-			taskConfig.getId(),
-			new ApidbCurrentReader(loginCredentials, preferences),
-			taskConfig.getPipeArgs()
-		);
+
+		return new RunnableSourceManager(taskConfig.getId(), new ApidbCurrentReader(loginCredentials, preferences),
+				taskConfig.getPipeArgs());
 	}
 }

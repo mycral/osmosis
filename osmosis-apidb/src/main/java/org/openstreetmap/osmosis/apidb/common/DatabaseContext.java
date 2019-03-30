@@ -15,151 +15,148 @@ import org.openstreetmap.osmosis.core.OsmosisRuntimeException;
 import org.openstreetmap.osmosis.core.database.DatabaseLoginCredentials;
 import org.openstreetmap.osmosis.core.database.DatabaseType;
 
-
 /**
- * This class manages the lifecycle of JDBC objects to minimise the risk of connection leaks and to
- * support a consistent approach to database access.
+ * This class manages the lifecycle of JDBC objects to minimise the risk of
+ * connection leaks and to support a consistent approach to database access.
  * 
  * @author Brett Henderson
  */
 public class DatabaseContext implements AutoCloseable {
 
-    private static final Logger LOG = Logger.getLogger(DatabaseContext.class.getName());
+	private static final Logger LOG = Logger.getLogger(DatabaseContext.class.getName());
 
-    private final DatabaseLoginCredentials loginCredentials;
+	private final DatabaseLoginCredentials loginCredentials;
 
-    private Connection connection;
+	private Connection connection;
 
 	/**
-	 * This statement is used in cases where the statement isn't exposed to the client. It is stored
-	 * globally here to allow it to remain open after a method return and to simplify resource
-	 * cleanup. It will be closed during release or if a new statement is created.
+	 * This statement is used in cases where the statement isn't exposed to the
+	 * client. It is stored globally here to allow it to remain open after a method
+	 * return and to simplify resource cleanup. It will be closed during release or
+	 * if a new statement is created.
 	 */
-    private Statement statement;
-    
-    private IdentityValueLoader identityValueLoader;
+	private Statement statement;
 
-    private boolean autoCommit;
+	private IdentityValueLoader identityValueLoader;
 
-    /**
-     * Creates a new instance.
-     * 
-     * @param loginCredentials Contains all information required to connect to the database.
-     */
-    public DatabaseContext(DatabaseLoginCredentials loginCredentials) {
-        this.loginCredentials = loginCredentials;
-        autoCommit = false;
-        try {
-            switch (loginCredentials.getDbType()) {
-            case POSTGRESQL:
-                Class.forName("org.postgresql.Driver");
-                identityValueLoader = new PostgresqlIdentityValueLoader(this);
-                break;
-            case MYSQL:
-                Class.forName("com.mysql.jdbc.Driver");
-                identityValueLoader = new MysqlIdentityValueLoader(this);
-                break;
-            default:
-                throw createUnknownDbTypeException();
-            }
-
-        } catch (ClassNotFoundException e) {
-            throw new OsmosisRuntimeException("Unable to find database driver.", e);
-        }
-    }
-
-    private OsmosisRuntimeException createUnknownDbTypeException() {
-        return new OsmosisRuntimeException("Unknown database type " + loginCredentials.getDbType() + ".");
-    }
-
-    /**
-     * If no database connection is open, a new connection is opened. The database connection is
-     * then returned.
-     * 
-     * @return The database connection.
-     */
-    private Connection getConnection() {
-        if (connection == null) {
-            switch (loginCredentials.getDbType()) {
-            case POSTGRESQL:
-                connection = getPostgresConnection();
-                break;
-            case MYSQL:
-                connection = getMysqlConnection();
-                break;
-            default:
-                throw createUnknownDbTypeException();
-            }
-        }
-        
-        return connection;
-    }
-
-    /**
-     * @return postgres connection
-     */
-    private Connection getPostgresConnection() {
-        Connection newConnection = null;
-        try {
-            LOG.finer("Creating a new database connection.");
-
-            newConnection = DriverManager.getConnection(
-            		"jdbc:postgresql://" + loginCredentials.getHost() + "/"
-                    + loginCredentials.getDatabase(), // + "?logLevel=2"
-                    loginCredentials.getUser(),
-                    loginCredentials.getPassword()
-            );
-
-            newConnection.setAutoCommit(autoCommit);
-
-        } catch (SQLException e) {
-            throw new OsmosisRuntimeException("Unable to establish a database connection.", e);
-        }
-        return newConnection;
-    }
-
-    /**
-     * @return The mysql database connection.
-     */
-    private Connection getMysqlConnection() {
-        Connection newConnection = null;
-        try {
-            String url;
-
-            url = "jdbc:mysql://" + loginCredentials.getHost() + "/" + loginCredentials.getDatabase() + "?user="
-                    + loginCredentials.getUser() + "&password=" + loginCredentials.getPassword();
-
-            if (loginCredentials.getForceUtf8()) {
-                url += "&useUnicode=true&characterEncoding=UTF-8";
-            }
-            if (loginCredentials.getProfileSql()) {
-                url += "&profileSql=true";
-            }
-
-            newConnection = DriverManager.getConnection(url);
-
-            newConnection.setAutoCommit(autoCommit);
-
-        } catch (SQLException e) {
-            throw new OsmosisRuntimeException("Unable to establish a database connection.", e);
-        }
-
-        return newConnection;
-    }
-
+	private boolean autoCommit;
 
 	/**
-	 * Returns the database type currently in use. This should only be used when it is not possible
-	 * to write database agnostic statements.
+	 * Creates a new instance.
+	 * 
+	 * @param loginCredentials
+	 *            Contains all information required to connect to the database.
+	 */
+	public DatabaseContext(DatabaseLoginCredentials loginCredentials) {
+		this.loginCredentials = loginCredentials;
+		autoCommit = false;
+		try {
+			switch (loginCredentials.getDbType()) {
+			case POSTGRESQL:
+				Class.forName("org.postgresql.Driver");
+				identityValueLoader = new PostgresqlIdentityValueLoader(this);
+				break;
+			case MYSQL:
+				Class.forName("com.mysql.jdbc.Driver");
+				identityValueLoader = new MysqlIdentityValueLoader(this);
+				break;
+			default:
+				throw createUnknownDbTypeException();
+			}
+
+		} catch (ClassNotFoundException e) {
+			throw new OsmosisRuntimeException("Unable to find database driver.", e);
+		}
+	}
+
+	private OsmosisRuntimeException createUnknownDbTypeException() {
+		return new OsmosisRuntimeException("Unknown database type " + loginCredentials.getDbType() + ".");
+	}
+
+	/**
+	 * If no database connection is open, a new connection is opened. The database
+	 * connection is then returned.
+	 * 
+	 * @return The database connection.
+	 */
+	private Connection getConnection() {
+		if (connection == null) {
+			switch (loginCredentials.getDbType()) {
+			case POSTGRESQL:
+				connection = getPostgresConnection();
+				break;
+			case MYSQL:
+				connection = getMysqlConnection();
+				break;
+			default:
+				throw createUnknownDbTypeException();
+			}
+		}
+
+		return connection;
+	}
+
+	/**
+	 * @return postgres connection
+	 */
+	private Connection getPostgresConnection() {
+		Connection newConnection = null;
+		try {
+			LOG.finer("Creating a new database connection.");
+
+			newConnection = DriverManager.getConnection(
+					"jdbc:postgresql://" + loginCredentials.getHost() + "/" + loginCredentials.getDatabase(), // +
+																												// "?logLevel=2"
+					loginCredentials.getUser(), loginCredentials.getPassword());
+
+			newConnection.setAutoCommit(autoCommit);
+
+		} catch (SQLException e) {
+			throw new OsmosisRuntimeException("Unable to establish a database connection.", e);
+		}
+		return newConnection;
+	}
+
+	/**
+	 * @return The mysql database connection.
+	 */
+	private Connection getMysqlConnection() {
+		Connection newConnection = null;
+		try {
+			String url;
+
+			url = "jdbc:mysql://" + loginCredentials.getHost() + "/" + loginCredentials.getDatabase() + "?user="
+					+ loginCredentials.getUser() + "&password=" + loginCredentials.getPassword();
+
+			if (loginCredentials.getForceUtf8()) {
+				url += "&useUnicode=true&characterEncoding=UTF-8";
+			}
+			if (loginCredentials.getProfileSql()) {
+				url += "&profileSql=true";
+			}
+
+			newConnection = DriverManager.getConnection(url);
+
+			newConnection.setAutoCommit(autoCommit);
+
+		} catch (SQLException e) {
+			throw new OsmosisRuntimeException("Unable to establish a database connection.", e);
+		}
+
+		return newConnection;
+	}
+
+	/**
+	 * Returns the database type currently in use. This should only be used when it
+	 * is not possible to write database agnostic statements.
 	 * 
 	 * @return The database type.
 	 */
-    public DatabaseType getDatabaseType() {
-    	return loginCredentials.getDbType();
-    }
-	
-	
-    /**
+	public DatabaseType getDatabaseType() {
+		return loginCredentials.getDbType();
+	}
+
+	/**
 	 * Truncates the contents of the specified tables.
 	 * 
 	 * @param tables
@@ -167,35 +164,34 @@ public class DatabaseContext implements AutoCloseable {
 	 */
 	public void truncateTables(List<String> tables) {
 		switch (loginCredentials.getDbType()) {
-        case POSTGRESQL:
-        	StringBuilder statementBuilder = new StringBuilder();
-    		
+		case POSTGRESQL:
+			StringBuilder statementBuilder = new StringBuilder();
+
 			for (String table : tables) {
 				if (statementBuilder.length() == 0) {
 					statementBuilder.append("TRUNCATE ");
 				} else {
 					statementBuilder.append(", ");
 				}
-				
+
 				statementBuilder.append(table);
 			}
-			
+
 			statementBuilder.append(" CASCADE");
-			
+
 			executeStatement(statementBuilder.toString());
 			break;
-        case MYSQL:
+		case MYSQL:
 			for (String table : tables) {
 				executeStatement("TRUNCATE " + table);
 			}
 			break;
 		default:
-            throw createUnknownDbTypeException();
-        }
+			throw createUnknownDbTypeException();
+		}
 	}
-	
-	
-    /**
+
+	/**
 	 * Disables the indexes of the specified tables.
 	 * 
 	 * @param tables
@@ -203,21 +199,20 @@ public class DatabaseContext implements AutoCloseable {
 	 */
 	public void disableIndexes(List<String> tables) {
 		switch (loginCredentials.getDbType()) {
-        case POSTGRESQL:
+		case POSTGRESQL:
 			// There is no way to automatically disable all indexes for a table.
 			break;
-        case MYSQL:
-        	for (String table : tables) {
-        		executeStatement("ALTER TABLE " + table + " DISABLE KEYS");
+		case MYSQL:
+			for (String table : tables) {
+				executeStatement("ALTER TABLE " + table + " DISABLE KEYS");
 			}
 			break;
 		default:
-            throw createUnknownDbTypeException();
-        }
+			throw createUnknownDbTypeException();
+		}
 	}
-	
-	
-    /**
+
+	/**
 	 * Enables the indexes of the specified tables.
 	 * 
 	 * @param tables
@@ -225,21 +220,20 @@ public class DatabaseContext implements AutoCloseable {
 	 */
 	public void enableIndexes(List<String> tables) {
 		switch (loginCredentials.getDbType()) {
-        case POSTGRESQL:
+		case POSTGRESQL:
 			// There is no way to automatically disable all indexes for a table.
 			break;
-        case MYSQL:
-        	for (String table : tables) {
-        		executeStatement("ALTER TABLE " + table + " ENABLE KEYS");
+		case MYSQL:
+			for (String table : tables) {
+				executeStatement("ALTER TABLE " + table + " ENABLE KEYS");
 			}
 			break;
 		default:
-            throw createUnknownDbTypeException();
-        }
+			throw createUnknownDbTypeException();
+		}
 	}
-	
-	
-    /**
+
+	/**
 	 * Locks the specified tables for exclusive access.
 	 * 
 	 * @param tables
@@ -247,31 +241,30 @@ public class DatabaseContext implements AutoCloseable {
 	 */
 	public void lockTables(List<String> tables) {
 		switch (loginCredentials.getDbType()) {
-        case POSTGRESQL:
+		case POSTGRESQL:
 			// Locking tables is not supported.
 			break;
-        case MYSQL:
-        	StringBuilder statementBuilder = new StringBuilder();
-        	
-        	for (String table : tables) {
-        		if (statementBuilder.length() == 0) {
-        			statementBuilder.append("LOCK TABLES ");
-        		} else {
-        			statementBuilder.append(", ");
-        		}
-        		statementBuilder.append(table);
-        		statementBuilder.append(" WRITE");
+		case MYSQL:
+			StringBuilder statementBuilder = new StringBuilder();
+
+			for (String table : tables) {
+				if (statementBuilder.length() == 0) {
+					statementBuilder.append("LOCK TABLES ");
+				} else {
+					statementBuilder.append(", ");
+				}
+				statementBuilder.append(table);
+				statementBuilder.append(" WRITE");
 			}
-        	
-        	executeStatement(statementBuilder.toString());
+
+			executeStatement(statementBuilder.toString());
 			break;
 		default:
-            throw createUnknownDbTypeException();
-        }
+			throw createUnknownDbTypeException();
+		}
 	}
-	
-	
-    /**
+
+	/**
 	 * Unlocks the specified tables.
 	 * 
 	 * @param tables
@@ -279,21 +272,20 @@ public class DatabaseContext implements AutoCloseable {
 	 */
 	public void unlockTables(List<String> tables) {
 		switch (loginCredentials.getDbType()) {
-        case POSTGRESQL:
+		case POSTGRESQL:
 			// Locking tables is not supported.
 			break;
-        case MYSQL:
-        	executeStatement("UNLOCK TABLES");
+		case MYSQL:
+			executeStatement("UNLOCK TABLES");
 			break;
 		default:
-            throw createUnknownDbTypeException();
-        }
+			throw createUnknownDbTypeException();
+		}
 	}
 
-
 	/**
-	 * Gets the last inserted identity column value. This is a global value and may not work
-	 * correctly if the database uses triggers.
+	 * Gets the last inserted identity column value. This is a global value and may
+	 * not work correctly if the database uses triggers.
 	 * 
 	 * @return The last inserted identity column value.
 	 */
@@ -301,9 +293,9 @@ public class DatabaseContext implements AutoCloseable {
 		return identityValueLoader.getLastInsertId();
 	}
 
-
 	/**
-	 * Gets the last retrieved sequence value. This is specific to the current connection only.
+	 * Gets the last retrieved sequence value. This is specific to the current
+	 * connection only.
 	 * 
 	 * @param sequenceName
 	 *            The name of the sequence.
@@ -313,244 +305,250 @@ public class DatabaseContext implements AutoCloseable {
 		return identityValueLoader.getLastSequenceId(sequenceName);
 	}
 
+	/**
+	 * Executes a sql statement against the database.
+	 * 
+	 * @param sql
+	 *            The sql statement to be invoked.
+	 */
+	public void executeStatement(String sql) {
+		try {
+			if (statement != null) {
+				statement.close();
+			}
 
-    /**
-     * Executes a sql statement against the database.
-     * 
-     * @param sql The sql statement to be invoked.
-     */
-    public void executeStatement(String sql) {
-        try {
-            if (statement != null) {
-                statement.close();
-            }
+			statement = getConnection().createStatement();
 
-            statement = getConnection().createStatement();
+			statement.execute(sql);
 
-            statement.execute(sql);
+		} catch (SQLException e) {
+			throw new OsmosisRuntimeException("Unable to execute statement.", e);
+		}
+	}
 
-        } catch (SQLException e) {
-            throw new OsmosisRuntimeException("Unable to execute statement.", e);
-        }
-    }
-
-    
-    /**
+	/**
 	 * Creates a new database prepared statement.
 	 * 
 	 * @param sql
 	 *            The statement to be created.
 	 * @return The newly created statement.
 	 */
-    public PreparedStatement prepareStatement(String sql) {
-        try {
-            PreparedStatement preparedStatement;
+	public PreparedStatement prepareStatement(String sql) {
+		try {
+			PreparedStatement preparedStatement;
 
-            preparedStatement = getConnection().prepareStatement(sql);
+			preparedStatement = getConnection().prepareStatement(sql);
 
-            return preparedStatement;
+			return preparedStatement;
 
-        } catch (SQLException e) {
-            throw new OsmosisRuntimeException("Unable to create database prepared statement.", e);
-        }
-    }
-    
-    
-    private void setStatementFetchSizeForStreaming(Statement streamingStatement) {
-    	try {
-	    	switch (loginCredentials.getDbType()) {
-	        case POSTGRESQL:
-	        	streamingStatement.setFetchSize(10000);
+		} catch (SQLException e) {
+			throw new OsmosisRuntimeException("Unable to create database prepared statement.", e);
+		}
+	}
+
+	private void setStatementFetchSizeForStreaming(Statement streamingStatement) {
+		try {
+			switch (loginCredentials.getDbType()) {
+			case POSTGRESQL:
+				streamingStatement.setFetchSize(10000);
 				break;
-	        case MYSQL:
-	        	streamingStatement.setFetchSize(Integer.MIN_VALUE);
+			case MYSQL:
+				streamingStatement.setFetchSize(Integer.MIN_VALUE);
 				break;
 			default:
-                throw createUnknownDbTypeException();
-            }
-    	} catch (SQLException e) {
-    		throw new OsmosisRuntimeException("Unable to update statement fetch size.", e);
-    	}
-    }
+				throw createUnknownDbTypeException();
+			}
+		} catch (SQLException e) {
+			throw new OsmosisRuntimeException("Unable to update statement fetch size.", e);
+		}
+	}
 
-    /**
-	 * Creates a new database statement that is configured so that any result sets created using it
-	 * will stream data from the database instead of returning all records at once and storing in
-	 * memory.
+	/**
+	 * Creates a new database statement that is configured so that any result sets
+	 * created using it will stream data from the database instead of returning all
+	 * records at once and storing in memory.
 	 * <p>
-	 * If no input parameters need to be set on the statement, use the executeStreamingQuery method
-	 * instead.
+	 * If no input parameters need to be set on the statement, use the
+	 * executeStreamingQuery method instead.
 	 * 
 	 * @param sql
 	 *            The statement to be created. This must be a select statement.
 	 * @return The newly created statement.
 	 */
-    public PreparedStatement prepareStatementForStreaming(String sql) {
-        try {
-            PreparedStatement newStatement;
+	public PreparedStatement prepareStatementForStreaming(String sql) {
+		try {
+			PreparedStatement newStatement;
 
-            // Create a statement for returning streaming results.
+			// Create a statement for returning streaming results.
 			newStatement = getConnection().prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY,
 					ResultSet.CONCUR_READ_ONLY);
 
 			setStatementFetchSizeForStreaming(newStatement);
 
-            return newStatement;
+			return newStatement;
 
-        } catch (SQLException e) {
-            throw new OsmosisRuntimeException("Unable to create streaming resultset statement.", e);
-        }
-    }
+		} catch (SQLException e) {
+			throw new OsmosisRuntimeException("Unable to create streaming resultset statement.", e);
+		}
+	}
 
-    /**
-     * Executes a query and returns a result set. The returned result set must be closed by the
-     * caller.
-     * 
-     * @param sql The query to execute.
-     * @return The newly created result set.
-     */
-    public ResultSet executeQuery(String sql) {
-        try {
-            ResultSet resultSet;
+	/**
+	 * Executes a query and returns a result set. The returned result set must be
+	 * closed by the caller.
+	 * 
+	 * @param sql
+	 *            The query to execute.
+	 * @return The newly created result set.
+	 */
+	public ResultSet executeQuery(String sql) {
+		try {
+			ResultSet resultSet;
 
-            LOG.finest("Executing query {" + sql + "}");
+			LOG.finest("Executing query {" + sql + "}");
 
-            if (statement != null) {
-                statement.close();
-            }
+			if (statement != null) {
+				statement.close();
+			}
 
-            statement = getConnection().createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-            
-            setStatementFetchSizeForStreaming(statement);
+			statement = getConnection().createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 
-            resultSet = statement.executeQuery(sql);
+			setStatementFetchSizeForStreaming(statement);
 
-            return resultSet;
+			resultSet = statement.executeQuery(sql);
 
-        } catch (SQLException e) {
-            throw new OsmosisRuntimeException("Unable to create resultset.", e);
-        }
-    }
+			return resultSet;
 
-    /**
-     * Commits any outstanding transaction.
-     */
-    public void commit() {
-        if (connection != null) {
-            try {
-                connection.commit();
-            } catch (SQLException e) {
-                throw new OsmosisRuntimeException("Unable to commit changes.", e);
-            }
-        }
-    }
+		} catch (SQLException e) {
+			throw new OsmosisRuntimeException("Unable to create resultset.", e);
+		}
+	}
 
-    /**
-     * Releases all database resources. This method is guaranteed not to throw transactions and
-     * should always be called in a finally block whenever this class is used.
-     * 
-     * @deprecated Use {@link #close()} instead.
-     */
-    public void release() {
-    	close();
-    }
+	/**
+	 * Commits any outstanding transaction.
+	 */
+	public void commit() {
+		if (connection != null) {
+			try {
+				connection.commit();
+			} catch (SQLException e) {
+				throw new OsmosisRuntimeException("Unable to commit changes.", e);
+			}
+		}
+	}
 
-    /**
-     * Releases all database resources. This method is guaranteed not to throw transactions and
-     * should always be called in a finally or try-with-resources block whenever this class is used.
-     */
-    public void close() {
-    	identityValueLoader.close();
-    	
-        if (statement != null) {
-            try {
-            	statement.close();
+	/**
+	 * Releases all database resources. This method is guaranteed not to throw
+	 * transactions and should always be called in a finally block whenever this
+	 * class is used.
+	 * 
+	 * @deprecated Use {@link #close()} instead.
+	 */
+	public void release() {
+		close();
+	}
 
-            } catch (SQLException e) {
-                // We cannot throw an exception within a release statement.
-                LOG.log(Level.WARNING, "Unable to close existing statement.", e);
-            }
+	/**
+	 * Releases all database resources. This method is guaranteed not to throw
+	 * transactions and should always be called in a finally or try-with-resources
+	 * block whenever this class is used.
+	 */
+	public void close() {
+		identityValueLoader.close();
 
-            statement = null;
-        }
-        if (connection != null) {
-            try {
-                connection.close();
+		if (statement != null) {
+			try {
+				statement.close();
 
-            } catch (SQLException e) {
-                // We cannot throw an exception within a release statement.
-                LOG.log(Level.WARNING, "Unable to close database connection.", e);
-            }
+			} catch (SQLException e) {
+				// We cannot throw an exception within a release statement.
+				LOG.log(Level.WARNING, "Unable to close existing statement.", e);
+			}
 
-            connection = null;
-        }
-    }
+			statement = null;
+		}
+		if (connection != null) {
+			try {
+				connection.close();
 
-    /**
-     * Sets the auto-commit property on the underlying connection.
-     * 
-     * @param autoCommit The new auto commit value.
-     */
-    public void setAutoCommit(boolean autoCommit) {
-        if (connection != null) {
-            try {
-                LOG.finest("Setting auto commit to " + autoCommit + ".");
+			} catch (SQLException e) {
+				// We cannot throw an exception within a release statement.
+				LOG.log(Level.WARNING, "Unable to close database connection.", e);
+			}
 
-                connection.setAutoCommit(autoCommit);
-            } catch (SQLException e) {
-                throw new OsmosisRuntimeException("Unable to commit changes.", e);
-            }
-        }
-        this.autoCommit = autoCommit;
-    }
+			connection = null;
+		}
+	}
 
-    /**
-     * Indicates if the specified column exists in the database.
-     * 
-     * @param tableName The table to check for.
-     * @param columnName The column to check for.
-     * @return True if the column exists, false otherwise.
-     */
-    public boolean doesColumnExist(String tableName, String columnName) {
-    	LOG.finest("Checking if column {" + columnName + "} in table {" + tableName + "} exists.");
+	/**
+	 * Sets the auto-commit property on the underlying connection.
+	 * 
+	 * @param autoCommit
+	 *            The new auto commit value.
+	 */
+	public void setAutoCommit(boolean autoCommit) {
+		if (connection != null) {
+			try {
+				LOG.finest("Setting auto commit to " + autoCommit + ".");
 
-        try (ResultSet resultSet = getConnection().getMetaData().getColumns(null, null, tableName, columnName)) {
-        	return resultSet.next();
-        } catch (SQLException e) {
-        	throw new OsmosisRuntimeException("Unable to check for the existence of column " + tableName + "."
-                  + columnName + ".", e);
-        }
-    }
+				connection.setAutoCommit(autoCommit);
+			} catch (SQLException e) {
+				throw new OsmosisRuntimeException("Unable to commit changes.", e);
+			}
+		}
+		this.autoCommit = autoCommit;
+	}
 
-    /**
-     * Indicates if the specified table exists in the database.
-     * 
-     * @param tableName The table to check for.
-     * @return True if the table exists, false otherwise.
-     */
-    public boolean doesTableExist(String tableName) {
-        try (ResultSet resultSet =
-                     getConnection().getMetaData().getTables(null, null, tableName, new String[] {"TABLE"})) {
-            LOG.finest("Checking if table {" + tableName + "} exists.");
+	/**
+	 * Indicates if the specified column exists in the database.
+	 * 
+	 * @param tableName
+	 *            The table to check for.
+	 * @param columnName
+	 *            The column to check for.
+	 * @return True if the column exists, false otherwise.
+	 */
+	public boolean doesColumnExist(String tableName, String columnName) {
+		LOG.finest("Checking if column {" + columnName + "} in table {" + tableName + "} exists.");
 
-            return resultSet.next();
+		try (ResultSet resultSet = getConnection().getMetaData().getColumns(null, null, tableName, columnName)) {
+			return resultSet.next();
+		} catch (SQLException e) {
+			throw new OsmosisRuntimeException(
+					"Unable to check for the existence of column " + tableName + "." + columnName + ".", e);
+		}
+	}
 
-        } catch (SQLException e) {
-            throw new OsmosisRuntimeException("Unable to check for the existence of table " + tableName + ".", e);
-        }
-    }
+	/**
+	 * Indicates if the specified table exists in the database.
+	 * 
+	 * @param tableName
+	 *            The table to check for.
+	 * @return True if the table exists, false otherwise.
+	 */
+	public boolean doesTableExist(String tableName) {
+		try (ResultSet resultSet = getConnection().getMetaData().getTables(null, null, tableName,
+				new String[] { "TABLE" })) {
+			LOG.finest("Checking if table {" + tableName + "} exists.");
 
-    /**
-     * Enforces cleanup of any remaining resources during garbage collection. This is a safeguard
-     * and should not be required if release is called appropriately.
-     * 
-     * @throws Throwable If a problem occurs during finalization.
-     */
-    @Override
-    protected void finalize() throws Throwable {
-        close();
+			return resultSet.next();
 
-        super.finalize();
-    }
+		} catch (SQLException e) {
+			throw new OsmosisRuntimeException("Unable to check for the existence of table " + tableName + ".", e);
+		}
+	}
+
+	/**
+	 * Enforces cleanup of any remaining resources during garbage collection. This
+	 * is a safeguard and should not be required if release is called appropriately.
+	 * 
+	 * @throws Throwable
+	 *             If a problem occurs during finalization.
+	 */
+	@Override
+	protected void finalize() throws Throwable {
+		close();
+
+		super.finalize();
+	}
 
 }

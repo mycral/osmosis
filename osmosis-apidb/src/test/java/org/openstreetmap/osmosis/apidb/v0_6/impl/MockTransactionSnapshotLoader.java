@@ -4,14 +4,13 @@ package org.openstreetmap.osmosis.apidb.v0_6.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-
 /**
- * A mocked transaction snapshot loader allowing canned snapshots to be returned.
+ * A mocked transaction snapshot loader allowing canned snapshots to be
+ * returned.
  */
 public class MockTransactionSnapshotLoader implements TransactionManager {
 
 	private List<TransactionSnapshot> snapshots = new ArrayList<TransactionSnapshot>();
-
 
 	/**
 	 * Gets the currently available snapshots.
@@ -22,12 +21,10 @@ public class MockTransactionSnapshotLoader implements TransactionManager {
 		return snapshots;
 	}
 
-
 	@Override
 	public TransactionSnapshot getTransactionSnapshot() {
 		return snapshots.remove(0);
 	}
-
 
 	@Override
 	public void executeWithinTransaction(Runnable target) {

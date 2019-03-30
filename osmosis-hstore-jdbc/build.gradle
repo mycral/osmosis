@@ -3,4 +3,4 @@ dependencies {
 }
 
 // Disable checkstyle because this is external code.
-checkstyleMain.enabled = false
+//checkstyleMain.enabled = false

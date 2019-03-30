@@ -8,18 +8,17 @@ import org.openstreetmap.osmosis.core.OsmosisRuntimeException;
 import org.openstreetmap.osmosis.core.container.v0_6.ChangeContainer;
 import org.openstreetmap.osmosis.core.task.v0_6.ChangeSink;
 
-
 /**
- * A mocked replication destination allowing the existing replication state to be loaded and the
- * current state maintained. All data processing calls such as process will be ignored.
+ * A mocked replication destination allowing the existing replication state to
+ * be loaded and the current state maintained. All data processing calls such as
+ * process will be ignored.
  */
 public class MockReplicationDestination implements ChangeSink {
-	
+
 	private boolean stateExists;
 	private ReplicationState currentState;
 	private Map<String, String> storedState;
-	
-	
+
 	/**
 	 * Creates a new instance with no state.
 	 */
@@ -27,8 +26,7 @@ public class MockReplicationDestination implements ChangeSink {
 		stateExists = false;
 		storedState = new HashMap<String, String>();
 	}
-	
-	
+
 	/**
 	 * Creates a new instance with an initial state.
 	 * 
@@ -37,23 +35,22 @@ public class MockReplicationDestination implements ChangeSink {
 	 */
 	public MockReplicationDestination(ReplicationState initialState) {
 		this();
-		
+
 		initialState.store(storedState);
 		stateExists = true;
 	}
 
-
-    /**
-     * {@inheritDoc}
-     */
-    public void initialize(Map<String, Object> metaData) {
+	/**
+	 * {@inheritDoc}
+	 */
+	public void initialize(Map<String, Object> metaData) {
 		// Get the replication state from the upstream task.
 		if (!metaData.containsKey(ReplicationState.META_DATA_KEY)) {
 			throw new OsmosisRuntimeException(
 					"No replication state has been provided in metadata key " + ReplicationState.META_DATA_KEY + ".");
 		}
 		currentState = (ReplicationState) metaData.get(ReplicationState.META_DATA_KEY);
-		
+
 		// Initialise the state from the stored state if it exists and increment
 		// the sequence number.
 		if (stateExists) {
@@ -62,7 +59,6 @@ public class MockReplicationDestination implements ChangeSink {
 		}
 	}
 
-
 	/**
 	 * {@inheritDoc}
 	 */
@@ -70,7 +66,6 @@ public class MockReplicationDestination implements ChangeSink {
 	public void process(ChangeContainer change) {
 		// Do nothing.
 	}
-
 
 	/**
 	 * {@inheritDoc}
@@ -81,7 +76,6 @@ public class MockReplicationDestination implements ChangeSink {
 		stateExists = true;
 	}
 
-
 	/**
 	 * {@inheritDoc}
 	 */
@@ -89,8 +83,7 @@ public class MockReplicationDestination implements ChangeSink {
 	public void close() {
 		// Do nothing.
 	}
-	
-	
+
 	/**
 	 * Returns the current state object tracked internally. This will be a state
 	 * object provided by a caller in the initialize method. It will remain

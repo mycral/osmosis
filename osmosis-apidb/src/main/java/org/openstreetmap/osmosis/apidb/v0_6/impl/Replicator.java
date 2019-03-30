@@ -13,7 +13,6 @@ import org.openstreetmap.osmosis.core.container.v0_6.ChangeContainer;
 import org.openstreetmap.osmosis.core.lifecycle.ReleasableIterator;
 import org.openstreetmap.osmosis.core.task.v0_6.ChangeSink;
 
-
 /**
  * Replicates changes from the database utilising transaction snapshots.
  */
@@ -28,10 +27,10 @@ public class Replicator {
 	/**
 	 * This is the maximum number of transaction ids sent in a single query. If
 	 * larger than 2 power 16 it fails due to a 16 bit number failing, but still
-	 * fails below that with a stack limit being exceeded. The current value is
-	 * near to the maximum value known to work, it will work slightly higher but
-	 * this is a round number. It is dependent on the max_stack_depth parameter
-	 * defined in postgresql.conf.
+	 * fails below that with a stack limit being exceeded. The current value is near
+	 * to the maximum value known to work, it will work slightly higher but this is
+	 * a round number. It is dependent on the max_stack_depth parameter defined in
+	 * postgresql.conf.
 	 */
 	private static final int TRANSACTION_QUERY_SIZE_MAX = 25000;
 
@@ -42,7 +41,6 @@ public class Replicator {
 	private int iterations;
 	private int minInterval;
 	private int maxInterval;
-
 
 	/**
 	 * Creates a new instance.
@@ -56,8 +54,7 @@ public class Replicator {
 	 * @param systemTimeLoader
 	 *            Loads the current system time from the database.
 	 * @param iterations
-	 *            The number of replication intervals to execute. 0 means
-	 *            infinite.
+	 *            The number of replication intervals to execute. 0 means infinite.
 	 * @param minInterval
 	 *            The minimum number of milliseconds between intervals.
 	 * @param maxInterval
@@ -65,9 +62,8 @@ public class Replicator {
 	 *            data is available. This isn't a hard limit because processing
 	 *            latency may increase the duration.
 	 */
-	public Replicator(ReplicationSource source, ChangeSink changeSink,
-			TransactionManager snapshotLoader, SystemTimeLoader systemTimeLoader, int iterations,
-			int minInterval, int maxInterval) {
+	public Replicator(ReplicationSource source, ChangeSink changeSink, TransactionManager snapshotLoader,
+			SystemTimeLoader systemTimeLoader, int iterations, int minInterval, int maxInterval) {
 		this.source = source;
 		this.changeSink = changeSink;
 		this.txnManager = snapshotLoader;
@@ -77,10 +73,9 @@ public class Replicator {
 		this.maxInterval = maxInterval;
 	}
 
-
 	/**
-	 * Obtains a new transaction shapshot from the database and updates the
-	 * state to match.
+	 * Obtains a new transaction shapshot from the database and updates the state to
+	 * match.
 	 * 
 	 * @param state
 	 *            The replication state.
@@ -122,12 +117,11 @@ public class Replicator {
 		}
 	}
 
-
 	/**
 	 * This performs a comparison of the two transaction ids using 32-bit
 	 * arithmetic. The result is (id1 - id2), but with both numbers cast to an
-	 * integer prior to the comparison. This provides a correct result even in
-	 * the case where the transaction id has wrapped around to 0.
+	 * integer prior to the comparison. This provides a correct result even in the
+	 * case where the transaction id has wrapped around to 0.
 	 * 
 	 * @param id1
 	 *            The first transaction id.
@@ -139,10 +133,9 @@ public class Replicator {
 		return ((int) id1) - ((int) id2);
 	}
 
-
 	/**
-	 * This adds an offset to the transaction id. It takes into account the
-	 * special values 0-2 and adds an extra 3 to the offset accordingly.
+	 * This adds an offset to the transaction id. It takes into account the special
+	 * values 0-2 and adds an extra 3 to the offset accordingly.
 	 * 
 	 * @param id
 	 *            The transaction id.
@@ -163,7 +156,6 @@ public class Replicator {
 
 		return newId;
 	}
-
 
 	private ReplicationQueryPredicates buildQueryPredicates(ReplicationState state) {
 		long topTransactionId;
@@ -205,7 +197,6 @@ public class Replicator {
 		return predicates;
 	}
 
-
 	private void copyChanges(ReleasableIterator<ChangeContainer> sourceIterator, ReplicationState state) {
 		try (ReleasableIterator<ChangeContainer> i = sourceIterator) {
 			Date currentTimestamp;
@@ -233,7 +224,6 @@ public class Replicator {
 		}
 	}
 
-
 	/**
 	 * Replicates the next set of changes from the database.
 	 */
@@ -245,7 +235,6 @@ public class Replicator {
 			changeSink.close();
 		}
 	}
-
 
 	/**
 	 * The main replication loop. This continues until the maximum number of
@@ -263,7 +252,7 @@ public class Replicator {
 					replicateImpl();
 				}
 			});
-			
+
 			// Stop if we've reached the target number of iterations.
 			if (iterations > 0 && iterationCount >= iterations) {
 				LOG.fine("Exiting replication loop.");
@@ -271,7 +260,6 @@ public class Replicator {
 			}
 		}
 	}
-
 
 	/**
 	 * Replicates the next set of changes from the database.
@@ -281,33 +269,32 @@ public class Replicator {
 		ReplicationQueryPredicates predicates;
 		Date systemTimestamp;
 		Map<String, Object> metaData;
-		
+
 		// Create an initial replication state.
 		state = new ReplicationState();
-		
+
 		// Initialise the sink and provide it with a reference to the state
 		// object. A single state instance is shared by both ends of the
 		// pipeline.
 		metaData = new HashMap<String, Object>(1);
 		metaData.put(ReplicationState.META_DATA_KEY, state);
 		changeSink.initialize(metaData);
-		
+
 		// Wait until the minimum delay interval has been reached.
 		while (true) {
 			/*
-			 * Determine the time of processing. Note that we must do this after
-			 * obtaining the database transaction snapshot. A key rule in
-			 * replication is that the timestamp we specify in our replication state
-			 * is always equal to or later than all data timestamps. This allows
-			 * consumers to know that when they pick a timestamp to start
-			 * replicating from that *all* data created after that timestamp will be
-			 * included in subsequent replications.
+			 * Determine the time of processing. Note that we must do this after obtaining
+			 * the database transaction snapshot. A key rule in replication is that the
+			 * timestamp we specify in our replication state is always equal to or later
+			 * than all data timestamps. This allows consumers to know that when they pick a
+			 * timestamp to start replicating from that *all* data created after that
+			 * timestamp will be included in subsequent replications.
 			 */
 			systemTimestamp = systemTimeLoader.getSystemTime();
 			if (LOG.isLoggable(Level.FINER)) {
 				LOG.finer("Loaded system time " + systemTimestamp + " from the database.");
 			}
-			
+
 			// Continue onto next step if we've reached the minimum interval or
 			// if our remaining interval exceeds the maximum (clock skew).
 			long remainingInterval = state.getTimestamp().getTime() + minInterval - systemTimestamp.getTime();
@@ -326,17 +313,17 @@ public class Replicator {
 		while (true) {
 			// Update our view of the current database transaction state.
 			obtainNewSnapshot(state);
-			
+
 			// Continue onto next step if data is available.
 			if (state.getTxnMaxQueried() != state.getTxnMax() || state.getTxnReady().size() > 0) {
 				break;
 			}
-			
+
 			systemTimestamp = systemTimeLoader.getSystemTime();
 			if (LOG.isLoggable(Level.FINER)) {
 				LOG.finer("Loaded system time " + systemTimestamp + " from the database.");
 			}
-			
+
 			// Continue onto next step if we've reached the maximum interval or
 			// if our remaining interval exceeds the maximum (clock skew).
 			long remainingInterval = state.getTimestamp().getTime() + maxInterval - systemTimestamp.getTime();
@@ -356,18 +343,18 @@ public class Replicator {
 		}
 
 		LOG.fine("Processing replication sequence.");
-		
+
 		/*
 		 * We must get the latest timestamp before proceeding. Using an earlier
-		 * timestamp runs the risk of marking a replication sequence with a
-		 * timestamp that is too early which may lead to replication clients
-		 * starting with a later sequence than they should.
+		 * timestamp runs the risk of marking a replication sequence with a timestamp
+		 * that is too early which may lead to replication clients starting with a later
+		 * sequence than they should.
 		 */
 		systemTimestamp = systemTimeLoader.getSystemTime();
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Loaded system time " + systemTimestamp + " from the database.");
 		}
-		
+
 		// If this is the first interval we are setting an initial state but not
 		// performing any replication.
 		if (state.getSequenceNumber() == 0) {
@@ -375,23 +362,22 @@ public class Replicator {
 			// database timestamp and transaction id.
 			state.setTimestamp(systemTimestamp);
 			state.setTxnMaxQueried(state.getTxnMax());
-			
+
 		} else {
 			// Obtain the predicates to use during the query.
 			predicates = buildQueryPredicates(state);
-	
+
 			// Write the changes to the destination.
 			if (predicates.getBottomTransactionId() != predicates.getTopTransactionId()) {
 				copyChanges(source.getHistory(predicates), state);
 			}
-	
+
 			/*
-			 * If we have completely caught up to the database, we update the
-			 * timestamp to the database system timestamp. Otherwise we leave
-			 * the timestamp set at the value determined while processing
-			 * changes. We update to the system timestamp when caught up to
-			 * ensure that a current timestamp is provided to consumers in the
-			 * case where no data has been created.
+			 * If we have completely caught up to the database, we update the timestamp to
+			 * the database system timestamp. Otherwise we leave the timestamp set at the
+			 * value determined while processing changes. We update to the system timestamp
+			 * when caught up to ensure that a current timestamp is provided to consumers in
+			 * the case where no data has been created.
 			 */
 			if (compareTxnIds(state.getTxnMaxQueried(), state.getTxnMax()) >= 0) {
 				state.setTimestamp(systemTimestamp);
@@ -400,7 +386,7 @@ public class Replicator {
 
 		// Commit changes.
 		changeSink.complete();
-		
+
 		LOG.fine("Replication sequence complete.");
 	}
 }

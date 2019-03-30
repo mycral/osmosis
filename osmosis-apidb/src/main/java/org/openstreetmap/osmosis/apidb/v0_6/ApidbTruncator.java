@@ -10,28 +10,23 @@ import org.openstreetmap.osmosis.core.database.DatabaseLoginCredentials;
 import org.openstreetmap.osmosis.core.database.DatabasePreferences;
 import org.openstreetmap.osmosis.core.task.common.RunnableTask;
 
-
 /**
- * A standalone OSM task with no inputs or outputs that truncates tables in a apidb database. This
- * is used for removing all existing data from tables.
+ * A standalone OSM task with no inputs or outputs that truncates tables in a
+ * apidb database. This is used for removing all existing data from tables.
  * 
  * @author Brett Henderson
  */
 public class ApidbTruncator implements RunnableTask {
 
 	// These tables will be truncated by the sql query.
-	private static final List<String> TRUNCATE_TABLES = Arrays.asList(new String[] {
-		"current_relation_members",
-			"current_relation_tags", "current_relations", "current_way_nodes",
-			"current_way_tags", "current_ways", "current_node_tags",
-			"current_nodes", "relation_members", "relation_tags", "relations",
-			"way_nodes", "way_tags", "ways", "node_tags", "nodes",
-			"changeset_tags", "changesets", "users"});
+	private static final List<String> TRUNCATE_TABLES = Arrays.asList(new String[] { "current_relation_members",
+			"current_relation_tags", "current_relations", "current_way_nodes", "current_way_tags", "current_ways",
+			"current_node_tags", "current_nodes", "relation_members", "relation_tags", "relations", "way_nodes",
+			"way_tags", "ways", "node_tags", "nodes", "changeset_tags", "changesets", "users" });
 
 	private DatabaseLoginCredentials loginCredentials;
 
 	private final SchemaVersionValidator schemaVersionValidator;
-
 
 	/**
 	 * Creates a new instance.
@@ -47,7 +42,6 @@ public class ApidbTruncator implements RunnableTask {
 		schemaVersionValidator = new SchemaVersionValidator(loginCredentials, preferences);
 	}
 
-
 	/**
 	 * Truncates all data from the database.
 	 */
@@ -56,7 +50,7 @@ public class ApidbTruncator implements RunnableTask {
 			schemaVersionValidator.validateVersion(ApidbVersionConstants.SCHEMA_MIGRATIONS);
 
 			dbCtx.truncateTables(TRUNCATE_TABLES);
-			
+
 			dbCtx.commit();
 		}
 	}

@@ -13,7 +13,6 @@ import org.openstreetmap.osmosis.core.database.ReleasableStatementContainer;
 import org.openstreetmap.osmosis.core.domain.v0_6.OsmUser;
 import org.openstreetmap.osmosis.core.lifecycle.Closeable;
 
-
 /**
  * Creates or loads the details of the Osmosis user in the database.
  * 
@@ -21,157 +20,162 @@ import org.openstreetmap.osmosis.core.lifecycle.Closeable;
  */
 public class UserManager implements Closeable {
 
-    private static final String SELECT_SQL_USER_EXISTS = "SELECT Count(id) AS userCount FROM users WHERE id = ?";
+	private static final String SELECT_SQL_USER_EXISTS = "SELECT Count(id) AS userCount FROM users WHERE id = ?";
 
-    private static final String INSERT_SQL_USER = "INSERT INTO users (id, email, pass_crypt,"
-            + " creation_time, display_name, data_public, description, home_lat, home_lon, home_zoom,"
-            + " nearby, pass_salt) VALUES (?, ?, '00000000000000000000000000000000', NOW(), ?, ?,"
-            + " ?, 0, 0, 3, 50, '00000000')";
+	private static final String INSERT_SQL_USER = "INSERT INTO users (id, email, pass_crypt,"
+			+ " creation_time, display_name, data_public, description, home_lat, home_lon, home_zoom,"
+			+ " nearby, pass_salt) VALUES (?, ?, '00000000000000000000000000000000', NOW(), ?, ?,"
+			+ " ?, 0, 0, 3, 50, '00000000')";
 
-    private static final String UPDATE_SQL_USER = "UPDATE users SET display_name = ? WHERE id = ?";
+	private static final String UPDATE_SQL_USER = "UPDATE users SET display_name = ? WHERE id = ?";
 
-    private final DatabaseContext dbCtx;
+	private final DatabaseContext dbCtx;
 
-    private final Set<Integer> updatedUsers;
+	private final Set<Integer> updatedUsers;
 
-    private final ReleasableStatementContainer statementContainer;
+	private final ReleasableStatementContainer statementContainer;
 
-    private PreparedStatement statementInsert;
+	private PreparedStatement statementInsert;
 
-    private PreparedStatement statementExists;
+	private PreparedStatement statementExists;
 
-    private PreparedStatement statementUpdate;
+	private PreparedStatement statementUpdate;
 
-    /**
-     * Creates a new instance.
-     * 
-     * @param dbCtx The database context to use for all database access.
-     */
-    public UserManager(DatabaseContext dbCtx) {
-        this.dbCtx = dbCtx;
+	/**
+	 * Creates a new instance.
+	 * 
+	 * @param dbCtx
+	 *            The database context to use for all database access.
+	 */
+	public UserManager(DatabaseContext dbCtx) {
+		this.dbCtx = dbCtx;
 
-        updatedUsers = new HashSet<Integer>();
-        statementContainer = new ReleasableStatementContainer();
-    }
+		updatedUsers = new HashSet<Integer>();
+		statementContainer = new ReleasableStatementContainer();
+	}
 
-    /**
-     * Checks if the specified user exists in the database.
-     * 
-     * @param user The user to check for.
-     * @return True if the user exists, false otherwise.
-     */
-    private boolean doesUserExistInDb(OsmUser user) {
-        if (statementExists == null) {
-            statementExists = statementContainer.add(dbCtx.prepareStatementForStreaming(SELECT_SQL_USER_EXISTS));
-        }
+	/**
+	 * Checks if the specified user exists in the database.
+	 * 
+	 * @param user
+	 *            The user to check for.
+	 * @return True if the user exists, false otherwise.
+	 */
+	private boolean doesUserExistInDb(OsmUser user) {
+		if (statementExists == null) {
+			statementExists = statementContainer.add(dbCtx.prepareStatementForStreaming(SELECT_SQL_USER_EXISTS));
+		}
 
-        try {
-	        statementExists.setInt(1, user.getId());
-	        
-	        try (ResultSet resultSet = statementExists.executeQuery()) {
-	        	resultSet.next();
-	        	
-	        	return resultSet.getInt("userCount") != 0;
-	        }
-        } catch (SQLException e) {
-            throw new OsmosisRuntimeException("Unable to check if user with id " + user.getId()
-                    + " exists in the database.", e);
-        }
-    }
+		try {
+			statementExists.setInt(1, user.getId());
 
-    /**
-     * Inserts the specified user into the database.
-     * 
-     * @param user The user to be inserted.
-     */
-    private void insertUser(OsmUser user) {
-        int prmIndex;
-        String userName;
-        boolean dataPublic;
+			try (ResultSet resultSet = statementExists.executeQuery()) {
+				resultSet.next();
 
-        if (statementInsert == null) {
-            statementInsert = statementContainer.add(dbCtx.prepareStatement(INSERT_SQL_USER));
-        }
+				return resultSet.getInt("userCount") != 0;
+			}
+		} catch (SQLException e) {
+			throw new OsmosisRuntimeException(
+					"Unable to check if user with id " + user.getId() + " exists in the database.", e);
+		}
+	}
 
-        if (OsmUser.NONE.equals(user)) {
-            userName = "Osmosis Anonymous";
-            dataPublic = false;
-        } else {
-            userName = user.getName();
-            dataPublic = true;
-        }
+	/**
+	 * Inserts the specified user into the database.
+	 * 
+	 * @param user
+	 *            The user to be inserted.
+	 */
+	private void insertUser(OsmUser user) {
+		int prmIndex;
+		String userName;
+		boolean dataPublic;
 
-        try {
-            prmIndex = 1;
-            statementInsert.setInt(prmIndex++, user.getId());
-            statementInsert.setString(prmIndex++, "osmosis_user_" + user.getId() + "@example.com");
-            statementInsert.setString(prmIndex++, userName);
-            statementInsert.setBoolean(prmIndex++, dataPublic);
-            statementInsert.setString(prmIndex++, userName);
+		if (statementInsert == null) {
+			statementInsert = statementContainer.add(dbCtx.prepareStatement(INSERT_SQL_USER));
+		}
 
-            statementInsert.executeUpdate();
+		if (OsmUser.NONE.equals(user)) {
+			userName = "Osmosis Anonymous";
+			dataPublic = false;
+		} else {
+			userName = user.getName();
+			dataPublic = true;
+		}
 
-        } catch (SQLException e) {
-            throw new OsmosisRuntimeException("Unable to insert user with id " + user.getId() + " into the database.",
-                    e);
-        }
-    }
+		try {
+			prmIndex = 1;
+			statementInsert.setInt(prmIndex++, user.getId());
+			statementInsert.setString(prmIndex++, "osmosis_user_" + user.getId() + "@example.com");
+			statementInsert.setString(prmIndex++, userName);
+			statementInsert.setBoolean(prmIndex++, dataPublic);
+			statementInsert.setString(prmIndex++, userName);
 
-    /**
-     * Updates the specified user in the database.
-     * 
-     * @param user The user to be updated.
-     */
-    private void updateUser(OsmUser user) {
-        int prmIndex;
+			statementInsert.executeUpdate();
 
-        if (statementUpdate == null) {
-            statementUpdate = statementContainer.add(dbCtx.prepareStatement(UPDATE_SQL_USER));
-        }
+		} catch (SQLException e) {
+			throw new OsmosisRuntimeException("Unable to insert user with id " + user.getId() + " into the database.",
+					e);
+		}
+	}
 
-        try {
-            String userName;
+	/**
+	 * Updates the specified user in the database.
+	 * 
+	 * @param user
+	 *            The user to be updated.
+	 */
+	private void updateUser(OsmUser user) {
+		int prmIndex;
 
-            if (OsmUser.NONE.equals(user)) {
-                userName = "Osmosis Anonymous";
-            } else {
-                userName = user.getName();
-            }
+		if (statementUpdate == null) {
+			statementUpdate = statementContainer.add(dbCtx.prepareStatement(UPDATE_SQL_USER));
+		}
 
-            prmIndex = 1;
-            statementUpdate.setString(prmIndex++, userName);
-            statementUpdate.setInt(prmIndex++, user.getId());
+		try {
+			String userName;
 
-            statementUpdate.executeUpdate();
+			if (OsmUser.NONE.equals(user)) {
+				userName = "Osmosis Anonymous";
+			} else {
+				userName = user.getName();
+			}
 
-        } catch (SQLException e) {
-            throw new OsmosisRuntimeException("Unable to update user with id " + user.getId() + " in the database.", e);
-        }
-    }
+			prmIndex = 1;
+			statementUpdate.setString(prmIndex++, userName);
+			statementUpdate.setInt(prmIndex++, user.getId());
 
-    /**
-     * Adds the user to the database or updates the name of the existing database entry if one
-     * already exists with the same id.
-     * 
-     * @param user The user to be created or updated.
-     */
-    public void addOrUpdateUser(OsmUser user) {
-        if (!updatedUsers.contains(user.getId())) {
-            if (doesUserExistInDb(user)) {
-                updateUser(user);
-            } else {
-                insertUser(user);
-            }
+			statementUpdate.executeUpdate();
 
-            updatedUsers.add(user.getId());
-        }
-    }
+		} catch (SQLException e) {
+			throw new OsmosisRuntimeException("Unable to update user with id " + user.getId() + " in the database.", e);
+		}
+	}
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void close() {
-        statementContainer.close();
-    }
+	/**
+	 * Adds the user to the database or updates the name of the existing database
+	 * entry if one already exists with the same id.
+	 * 
+	 * @param user
+	 *            The user to be created or updated.
+	 */
+	public void addOrUpdateUser(OsmUser user) {
+		if (!updatedUsers.contains(user.getId())) {
+			if (doesUserExistInDb(user)) {
+				updateUser(user);
+			} else {
+				insertUser(user);
+			}
+
+			updatedUsers.add(user.getId());
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void close() {
+		statementContainer.close();
+	}
 }

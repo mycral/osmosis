@@ -8,17 +8,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-
 /**
- * Contains the state to be remembered between replication invocations. This state ensures that no
- * data is missed during replication, and none is repeated.
+ * Contains the state to be remembered between replication invocations. This
+ * state ensures that no data is missed during replication, and none is
+ * repeated.
  */
 public class ReplicationState extends org.openstreetmap.osmosis.replication.common.ReplicationState {
 	private long txnMax;
 	private long txnMaxQueried;
 	private List<Long> txnActive;
 	private List<Long> txnReady;
-
 
 	/**
 	 * Creates a new instance with all values set to defaults.
@@ -30,7 +29,6 @@ public class ReplicationState extends org.openstreetmap.osmosis.replication.comm
 		this.txnActive = new ArrayList<Long>();
 		this.txnReady = new ArrayList<Long>();
 	}
-
 
 	/**
 	 * Creates a new instance.
@@ -48,16 +46,15 @@ public class ReplicationState extends org.openstreetmap.osmosis.replication.comm
 	 * @param sequenceNumber
 	 *            The replication sequence number.
 	 */
-	public ReplicationState(long txnMax, long txnMaxQueried, List<Long> txnActive, List<Long> txnReady,
-			Date timestamp, long sequenceNumber) {
+	public ReplicationState(long txnMax, long txnMaxQueried, List<Long> txnActive, List<Long> txnReady, Date timestamp,
+			long sequenceNumber) {
 		super(timestamp, sequenceNumber);
 		this.txnMax = txnMax;
 		this.txnMaxQueried = txnMaxQueried;
 		this.txnActive = new ArrayList<Long>(txnActive);
 		this.txnReady = new ArrayList<Long>(txnReady);
 	}
-	
-	
+
 	/**
 	 * Creates a new instance.
 	 * 
@@ -67,8 +64,7 @@ public class ReplicationState extends org.openstreetmap.osmosis.replication.comm
 	public ReplicationState(Map<String, String> properties) {
 		load(properties);
 	}
-	
-	
+
 	/**
 	 * Loads all state from the provided properties object.
 	 * 
@@ -83,7 +79,6 @@ public class ReplicationState extends org.openstreetmap.osmosis.replication.comm
 		txnReady = fromString(properties.get("txnReadyList"));
 	}
 
-
 	@Override
 	public void store(Map<String, String> properties) {
 		super.store(properties);
@@ -92,8 +87,7 @@ public class ReplicationState extends org.openstreetmap.osmosis.replication.comm
 		properties.put("txnActiveList", toString(txnActive));
 		properties.put("txnReadyList", toString(txnReady));
 	}
-	
-	
+
 	@Override
 	public Map<String, String> store() {
 		Map<String, String> properties = new HashMap<String, String>();
@@ -101,10 +95,9 @@ public class ReplicationState extends org.openstreetmap.osmosis.replication.comm
 		return properties;
 	}
 
-
 	private String toString(List<Long> values) {
 		StringBuilder buffer;
-		
+
 		buffer = new StringBuilder();
 		for (long value : values) {
 			if (buffer.length() > 0) {
@@ -112,25 +105,23 @@ public class ReplicationState extends org.openstreetmap.osmosis.replication.comm
 			}
 			buffer.append(value);
 		}
-		
+
 		return buffer.toString();
 	}
-	
-	
+
 	private List<Long> fromString(String values) {
 		StringTokenizer tokens;
 		List<Long> result;
-		
+
 		tokens = new StringTokenizer(values, ",");
-		
+
 		result = new ArrayList<Long>();
 		while (tokens.hasMoreTokens()) {
 			result.add(Long.parseLong(tokens.nextToken()));
 		}
-		
+
 		return result;
 	}
-
 
 	/**
 	 * Gets the maximum transaction id in the database.
@@ -140,7 +131,6 @@ public class ReplicationState extends org.openstreetmap.osmosis.replication.comm
 	public long getTxnMax() {
 		return txnMax;
 	}
-	
 
 	/**
 	 * Sets the maximum transaction id in the database.
@@ -152,7 +142,6 @@ public class ReplicationState extends org.openstreetmap.osmosis.replication.comm
 		this.txnMax = txnMax;
 	}
 
-
 	/**
 	 * Gets the maximum transaction id currently replicated from the database.
 	 * 
@@ -161,7 +150,6 @@ public class ReplicationState extends org.openstreetmap.osmosis.replication.comm
 	public long getTxnMaxQueried() {
 		return txnMaxQueried;
 	}
-
 
 	/**
 	 * Sets the maximum transaction id currently replicated from the database.
@@ -173,17 +161,15 @@ public class ReplicationState extends org.openstreetmap.osmosis.replication.comm
 		this.txnMaxQueried = txnMaxQueried;
 	}
 
-
 	/**
-	 * Gets the currently active transaction ids. These cannot be replicated until they have
-	 * committed.
+	 * Gets the currently active transaction ids. These cannot be replicated until
+	 * they have committed.
 	 * 
 	 * @return The list of transaction ids.
 	 */
 	public List<Long> getTxnActive() {
 		return txnActive;
 	}
-
 
 	/**
 	 * Gets the previously active transaction ids that can now be queried.
@@ -194,22 +180,18 @@ public class ReplicationState extends org.openstreetmap.osmosis.replication.comm
 		return txnReady;
 	}
 
-
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
 	public boolean equals(Object obj) {
 		boolean result;
-		
+
 		if (obj instanceof ReplicationState) {
 			ReplicationState compareState = (ReplicationState) obj;
-			
-			if (super.equals(obj)
-					&& txnMax == compareState.txnMax
-					&& txnMaxQueried == compareState.txnMaxQueried
-					&& txnActive.equals(compareState.txnActive)
-					&& txnReady.equals(compareState.txnReady)) {
+
+			if (super.equals(obj) && txnMax == compareState.txnMax && txnMaxQueried == compareState.txnMaxQueried
+					&& txnActive.equals(compareState.txnActive) && txnReady.equals(compareState.txnReady)) {
 				result = true;
 			} else {
 				result = false;
@@ -217,21 +199,19 @@ public class ReplicationState extends org.openstreetmap.osmosis.replication.comm
 		} else {
 			result = false;
 		}
-		
+
 		return result;
 	}
-
 
 	@Override
 	public int hashCode() {
 		return super.hashCode() + (int) txnMax + (int) txnMaxQueried;
 	}
 
-
 	@Override
 	public String toString() {
 		return "ReplicationState(txnMax=" + txnMax + ", txnMaxQueried=" + txnMaxQueried + ", txnActive=" + txnActive
-				+ ", txnReady=" + txnReady + ", timestamp=" + getTimestamp() + ", sequenceNumber="
-				+ getSequenceNumber() + ")";
+				+ ", txnReady=" + txnReady + ", timestamp=" + getTimestamp() + ", sequenceNumber=" + getSequenceNumber()
+				+ ")";
 	}
 }

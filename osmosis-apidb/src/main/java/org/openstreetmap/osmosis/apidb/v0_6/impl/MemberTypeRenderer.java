@@ -7,23 +7,21 @@ import java.util.Map;
 import org.openstreetmap.osmosis.core.OsmosisRuntimeException;
 import org.openstreetmap.osmosis.core.domain.v0_6.EntityType;
 
-
 /**
  * Renders a member type object into its database representation.
  * 
  * @author Brett Henderson
  */
 public class MemberTypeRenderer {
-	
+
 	private static final Map<EntityType, String> MEMBER_TYPE_MAP = new HashMap<EntityType, String>();
-	
+
 	static {
 		MEMBER_TYPE_MAP.put(EntityType.Node, "Node");
 		MEMBER_TYPE_MAP.put(EntityType.Way, "Way");
 		MEMBER_TYPE_MAP.put(EntityType.Relation, "Relation");
 	}
-	
-	
+
 	/**
 	 * Renders a member type into its xml representation.
 	 * 

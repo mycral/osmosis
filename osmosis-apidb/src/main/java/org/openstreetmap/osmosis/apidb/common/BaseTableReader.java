@@ -9,7 +9,6 @@ import org.openstreetmap.osmosis.core.OsmosisRuntimeException;
 import org.openstreetmap.osmosis.core.database.DatabaseLoginCredentials;
 import org.openstreetmap.osmosis.core.lifecycle.ReleasableIterator;
 
-
 /**
  * Provides the base implementation of all database table readers.
  * 
@@ -19,12 +18,11 @@ import org.openstreetmap.osmosis.core.lifecycle.ReleasableIterator;
  *            The type of entity to retrieved.
  */
 public abstract class BaseTableReader<T> implements ReleasableIterator<T> {
-	
+
 	private DatabaseContext dbCtx;
 	private ResultSet resultSet;
 	private T nextValue;
-	
-	
+
 	/**
 	 * Creates a new instance.
 	 * 
@@ -34,8 +32,7 @@ public abstract class BaseTableReader<T> implements ReleasableIterator<T> {
 	public BaseTableReader(DatabaseLoginCredentials loginCredentials) {
 		dbCtx = new DatabaseContext(loginCredentials);
 	}
-	
-	
+
 	/**
 	 * Builds the result set that the reader will iterate over.
 	 * 
@@ -44,7 +41,6 @@ public abstract class BaseTableReader<T> implements ReleasableIterator<T> {
 	 * @return A result set positioned before the first record.
 	 */
 	protected abstract ResultSet createResultSet(DatabaseContext queryDbCtx);
-	
 
 	/**
 	 * Builds an entity object from the current recordset row.
@@ -54,34 +50,31 @@ public abstract class BaseTableReader<T> implements ReleasableIterator<T> {
 	 * @return The result of the read.
 	 */
 	protected abstract ReadResult<T> createNextValue(ResultSet activeResultSet);
-	
-	
+
 	/**
-	 * If the implementation requires multiple rows to build an entity object,
-	 * this method allows the implementation to return an entity based on the
-	 * fact that no more rows are available. This default implementation returns
-	 * a blank result.
+	 * If the implementation requires multiple rows to build an entity object, this
+	 * method allows the implementation to return an entity based on the fact that
+	 * no more rows are available. This default implementation returns a blank
+	 * result.
 	 * 
 	 * @return The last result record.
 	 */
 	protected ReadResult<T> createLastValue() {
 		return new ReadResult<T>(true, null);
 	}
-	
-	
+
 	/**
 	 * Reads the next entity from the database and stores it in the internal
-	 * nextValue variable. This will be set to null if no more data is
-	 * available.
+	 * nextValue variable. This will be set to null if no more data is available.
 	 */
 	private void readNextValue() {
 		if (resultSet == null) {
 			resultSet = createResultSet(dbCtx);
 		}
-		
+
 		try {
 			ReadResult<T> readResult;
-			
+
 			// Loop until a valid result is determined. Typically a loop is
 			// required when a record on the result set is skipped over by the
 			// reader implementation.
@@ -89,19 +82,18 @@ public abstract class BaseTableReader<T> implements ReleasableIterator<T> {
 				if (resultSet.next()) {
 					readResult = createNextValue(resultSet);
 				} else {
-					
+
 					readResult = createLastValue();
 				}
 			} while (!readResult.isUsableResult());
-			
+
 			nextValue = readResult.getEntity();
-			
+
 		} catch (SQLException e) {
 			throw new OsmosisRuntimeException("Unable to move to next record.", e);
 		}
 	}
-	
-	
+
 	/**
 	 * {@inheritDoc}
 	 */
@@ -109,50 +101,47 @@ public abstract class BaseTableReader<T> implements ReleasableIterator<T> {
 		if (resultSet == null) {
 			readNextValue();
 		}
-		
+
 		return (nextValue != null);
 	}
-	
-	
+
 	/**
 	 * {@inheritDoc}
 	 */
 	public T next() {
 		T result;
-		
+
 		if (!hasNext()) {
 			throw new NoSuchElementException();
 		}
-		
+
 		result = nextValue;
-		
+
 		readNextValue();
-		
+
 		return result;
 	}
-	
-	
+
 	/**
 	 * {@inheritDoc}
 	 */
 	public void close() {
 		nextValue = null;
 		resultSet = null;
-		
+
 		dbCtx.close();
 	}
-	
-	
+
 	/**
 	 * {@inheritDoc}
 	 */
 	public void remove() {
 		throw new UnsupportedOperationException();
 	}
-	
-	
+
 	/**
-	 * Represents the result of an entity read from the result set at the current position.
+	 * Represents the result of an entity read from the result set at the current
+	 * position.
 	 * 
 	 * @param <T>
 	 *            The type of entity to retrieved.
@@ -160,8 +149,7 @@ public abstract class BaseTableReader<T> implements ReleasableIterator<T> {
 	protected static class ReadResult<T> {
 		private boolean usableResult;
 		private T entity;
-		
-		
+
 		/**
 		 * Creates a new instance.
 		 * 
@@ -174,8 +162,7 @@ public abstract class BaseTableReader<T> implements ReleasableIterator<T> {
 			this.usableResult = usableResult;
 			this.entity = entity;
 		}
-		
-		
+
 		/**
 		 * Returns the usable result flag.
 		 * 
@@ -184,8 +171,7 @@ public abstract class BaseTableReader<T> implements ReleasableIterator<T> {
 		public boolean isUsableResult() {
 			return usableResult;
 		}
-		
-		
+
 		/**
 		 * Returns the entity.
 		 * 

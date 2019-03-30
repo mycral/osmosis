@@ -8,15 +8,13 @@ import org.openstreetmap.osmosis.core.database.RowMapperListener;
 import org.openstreetmap.osmosis.core.domain.v0_6.WayNode;
 import org.springframework.jdbc.core.RowCallbackHandler;
 
-
 /**
  * Maps way node result set rows into way node objects.
  */
 public class WayNodeRowMapper implements RowCallbackHandler {
-	
+
 	private RowMapperListener<WayNode> listener;
-	
-	
+
 	/**
 	 * Creates a new instance.
 	 * 
@@ -26,20 +24,19 @@ public class WayNodeRowMapper implements RowCallbackHandler {
 	public WayNodeRowMapper(RowMapperListener<WayNode> listener) {
 		this.listener = listener;
 	}
-	
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
 	public void processRow(ResultSet resultSet) throws SQLException {
-        long nodeId;
-        WayNode wayNode;
-        
+		long nodeId;
+		WayNode wayNode;
+
 		nodeId = resultSet.getLong("node_id");
-		
+
 		wayNode = new WayNode(nodeId);
-		
-        listener.process(wayNode, resultSet);
+
+		listener.process(wayNode, resultSet);
 	}
 }

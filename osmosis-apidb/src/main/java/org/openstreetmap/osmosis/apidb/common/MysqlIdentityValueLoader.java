@@ -8,21 +8,18 @@ import java.sql.SQLException;
 import org.openstreetmap.osmosis.core.OsmosisRuntimeException;
 import org.openstreetmap.osmosis.core.database.ReleasableStatementContainer;
 
-
 /**
  * Mysql implementation of an identity value loader.
  * 
  * @author Brett Henderson
  */
 public class MysqlIdentityValueLoader implements IdentityValueLoader {
-	private static final String SQL_SELECT_LAST_INSERT_ID =
-		"SELECT LAST_INSERT_ID() AS lastInsertId FROM DUAL";
-	
+	private static final String SQL_SELECT_LAST_INSERT_ID = "SELECT LAST_INSERT_ID() AS lastInsertId FROM DUAL";
+
 	private DatabaseContext dbCtx;
 	private ReleasableStatementContainer statementContainer;
 	private PreparedStatement selectInsertIdStatement;
-	
-	
+
 	/**
 	 * Creates a new instance.
 	 * 
@@ -31,21 +28,19 @@ public class MysqlIdentityValueLoader implements IdentityValueLoader {
 	 */
 	public MysqlIdentityValueLoader(DatabaseContext dbCtx) {
 		this.dbCtx = dbCtx;
-		
+
 		statementContainer = new ReleasableStatementContainer();
 	}
-	
-	
+
 	/**
-	 * Returns the id of the most recently inserted row on the current
-	 * connection.
+	 * Returns the id of the most recently inserted row on the current connection.
 	 * 
 	 * @return The newly inserted id.
 	 */
 	public long getLastInsertId() {
 		if (selectInsertIdStatement == null) {
-			selectInsertIdStatement = statementContainer.add(dbCtx
-					.prepareStatementForStreaming(SQL_SELECT_LAST_INSERT_ID));
+			selectInsertIdStatement = statementContainer
+					.add(dbCtx.prepareStatementForStreaming(SQL_SELECT_LAST_INSERT_ID));
 		}
 
 		try (ResultSet lastInsertQuery = selectInsertIdStatement.executeQuery()) {
@@ -56,7 +51,6 @@ public class MysqlIdentityValueLoader implements IdentityValueLoader {
 		}
 	}
 
-
 	/**
 	 * {@inheritDoc}
 	 */
@@ -64,8 +58,7 @@ public class MysqlIdentityValueLoader implements IdentityValueLoader {
 	public long getLastSequenceId(String sequenceName) {
 		throw new UnsupportedOperationException();
 	}
-	
-	
+
 	/**
 	 * {@inheritDoc}
 	 */

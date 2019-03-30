@@ -7,7 +7,6 @@ import org.openstreetmap.osmosis.core.database.FeatureCollectionLoader;
 import org.openstreetmap.osmosis.core.domain.v0_6.Entity;
 import org.openstreetmap.osmosis.core.domain.v0_6.Tag;
 
-
 /**
  * Loads tags from entities.
  * 

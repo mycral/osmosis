@@ -6,15 +6,14 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 /**
- * Represents the data associated with a database transaction snapshot providing information about
- * currently in-flight transactions.
+ * Represents the data associated with a database transaction snapshot providing
+ * information about currently in-flight transactions.
  */
 public class TransactionSnapshot {
 	private long xMin;
 	private long xMax;
 	private List<Long> xIpList;
-	
-	
+
 	/**
 	 * Creates a new instance.
 	 * 
@@ -23,12 +22,12 @@ public class TransactionSnapshot {
 	 */
 	public TransactionSnapshot(String snapshotString) {
 		StringTokenizer tokenizer;
-		
+
 		tokenizer = new StringTokenizer(snapshotString, ":");
-		
+
 		xMin = Long.parseLong(tokenizer.nextToken());
 		xMax = Long.parseLong(tokenizer.nextToken());
-		
+
 		xIpList = new ArrayList<Long>();
 		if (tokenizer.hasMoreTokens()) {
 			tokenizer = new StringTokenizer(tokenizer.nextToken(), ",");
@@ -37,7 +36,6 @@ public class TransactionSnapshot {
 			}
 		}
 	}
-
 
 	/**
 	 * Gets the earliest still active transaction.
@@ -48,7 +46,6 @@ public class TransactionSnapshot {
 		return xMin;
 	}
 
-
 	/**
 	 * Gets the next transaction to be created.
 	 * 
@@ -57,7 +54,6 @@ public class TransactionSnapshot {
 	public long getXMax() {
 		return xMax;
 	}
-
 
 	/**
 	 * Gets the list of active transactions.

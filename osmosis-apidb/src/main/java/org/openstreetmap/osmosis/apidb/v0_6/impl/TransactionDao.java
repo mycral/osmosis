@@ -9,18 +9,16 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 
-
 /**
- * Reads active transaction ids from the database allowing up-to-current queries to be performed
- * when extracting changesets from the history tables.
+ * Reads active transaction ids from the database allowing up-to-current queries
+ * to be performed when extracting changesets from the history tables.
  */
 public class TransactionDao implements TransactionManager {
 	private static final Logger LOG = Logger.getLogger(TransactionDao.class.getName());
-	
+
 	private DatabaseContext2 dbCtx;
 	private JdbcTemplate jdbcTemplate;
-	
-	
+
 	/**
 	 * Creates a new instance.
 	 * 
@@ -29,29 +27,26 @@ public class TransactionDao implements TransactionManager {
 	 */
 	public TransactionDao(DatabaseContext2 dbCtx) {
 		this.dbCtx = dbCtx;
-		
+
 		jdbcTemplate = dbCtx.getJdbcTemplate();
 	}
-	
-	
+
 	@Override
 	public TransactionSnapshot getTransactionSnapshot() {
 		String snapshotString;
-		TransactionSnapshot snapshot; 
-		
+		TransactionSnapshot snapshot;
+
 		snapshotString = jdbcTemplate.queryForObject("SELECT txid_current_snapshot()", String.class);
-		
+
 		snapshot = new TransactionSnapshot(snapshotString);
-		
+
 		if (LOG.isLoggable(Level.FINER)) {
-			LOG.finer("Loaded new database snapshot, xmin=" + snapshot.getXMin()
-					+ ", xmax=" + snapshot.getXMax()
+			LOG.finer("Loaded new database snapshot, xmin=" + snapshot.getXMin() + ", xmax=" + snapshot.getXMax()
 					+ ", xiplist=" + snapshot.getXIpList());
 		}
-		
+
 		return snapshot;
 	}
-
 
 	@Override
 	public void executeWithinTransaction(final Runnable target) {

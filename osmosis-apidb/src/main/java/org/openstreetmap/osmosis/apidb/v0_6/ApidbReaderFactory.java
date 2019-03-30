@@ -10,7 +10,6 @@ import org.openstreetmap.osmosis.core.pipeline.common.TaskConfiguration;
 import org.openstreetmap.osmosis.core.pipeline.common.TaskManager;
 import org.openstreetmap.osmosis.core.pipeline.v0_6.RunnableSourceManager;
 
-
 /**
  * The task manager factory for a database reader.
  * 
@@ -18,8 +17,7 @@ import org.openstreetmap.osmosis.core.pipeline.v0_6.RunnableSourceManager;
  */
 public class ApidbReaderFactory extends DatabaseTaskManagerFactory {
 	private static final String ARG_SNAPSHOT_INSTANT = "snapshotInstant";
-	
-	
+
 	/**
 	 * {@inheritDoc}
 	 */
@@ -28,16 +26,13 @@ public class ApidbReaderFactory extends DatabaseTaskManagerFactory {
 		DatabaseLoginCredentials loginCredentials;
 		DatabasePreferences preferences;
 		Date snapshotInstant;
-		
+
 		// Get the task arguments.
 		loginCredentials = getDatabaseLoginCredentials(taskConfig);
 		preferences = getDatabasePreferences(taskConfig);
 		snapshotInstant = getDateArgument(taskConfig, ARG_SNAPSHOT_INSTANT, new Date());
-		
-		return new RunnableSourceManager(
-			taskConfig.getId(),
-			new ApidbReader(loginCredentials, preferences, snapshotInstant),
-			taskConfig.getPipeArgs()
-		);
+
+		return new RunnableSourceManager(taskConfig.getId(),
+				new ApidbReader(loginCredentials, preferences, snapshotInstant), taskConfig.getPipeArgs());
 	}
 }

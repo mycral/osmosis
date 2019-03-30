@@ -15,76 +15,80 @@ import org.openstreetmap.osmosis.core.task.common.ChangeAction;
 import org.openstreetmap.osmosis.core.task.v0_6.ChangeSink;
 
 /**
- * A change sink writing to database tables. This aims to be suitable for running at regular
- * intervals with database overhead proportional to changeset size.
+ * A change sink writing to database tables. This aims to be suitable for
+ * running at regular intervals with database overhead proportional to changeset
+ * size.
  * 
  * @author Brett Henderson
  */
 public class ApidbChangeWriter implements ChangeSink {
 
-    private final ChangeWriter changeWriter;
+	private final ChangeWriter changeWriter;
 
-    private final Map<ChangeAction, ActionChangeWriter> actionWriterMap;
+	private final Map<ChangeAction, ActionChangeWriter> actionWriterMap;
 
-    private final SchemaVersionValidator schemaVersionValidator;
+	private final SchemaVersionValidator schemaVersionValidator;
 
-    /**
-     * Creates a new instance.
-     * 
-     * @param loginCredentials Contains all information required to connect to the database.
-     * @param preferences Contains preferences configuring database behaviour.
-     * @param populateCurrentTables If true, the current tables will be populated as well as history
-     *        tables.
-     */
-    public ApidbChangeWriter(DatabaseLoginCredentials loginCredentials, DatabasePreferences preferences,
-            boolean populateCurrentTables) {
-        changeWriter = new ChangeWriter(loginCredentials, populateCurrentTables);
-        actionWriterMap = new HashMap<ChangeAction, ActionChangeWriter>();
-        actionWriterMap.put(ChangeAction.Create, new ActionChangeWriter(changeWriter, ChangeAction.Create));
-        actionWriterMap.put(ChangeAction.Modify, new ActionChangeWriter(changeWriter, ChangeAction.Modify));
-        actionWriterMap.put(ChangeAction.Delete, new ActionChangeWriter(changeWriter, ChangeAction.Delete));
+	/**
+	 * Creates a new instance.
+	 * 
+	 * @param loginCredentials
+	 *            Contains all information required to connect to the database.
+	 * @param preferences
+	 *            Contains preferences configuring database behaviour.
+	 * @param populateCurrentTables
+	 *            If true, the current tables will be populated as well as history
+	 *            tables.
+	 */
+	public ApidbChangeWriter(DatabaseLoginCredentials loginCredentials, DatabasePreferences preferences,
+			boolean populateCurrentTables) {
+		changeWriter = new ChangeWriter(loginCredentials, populateCurrentTables);
+		actionWriterMap = new HashMap<ChangeAction, ActionChangeWriter>();
+		actionWriterMap.put(ChangeAction.Create, new ActionChangeWriter(changeWriter, ChangeAction.Create));
+		actionWriterMap.put(ChangeAction.Modify, new ActionChangeWriter(changeWriter, ChangeAction.Modify));
+		actionWriterMap.put(ChangeAction.Delete, new ActionChangeWriter(changeWriter, ChangeAction.Delete));
 
-        schemaVersionValidator = new SchemaVersionValidator(loginCredentials, preferences);
-    }
+		schemaVersionValidator = new SchemaVersionValidator(loginCredentials, preferences);
+	}
 
-    /**
-     * {@inheritDoc}
-     */
-    public void initialize(Map<String, Object> metaData) {
+	/**
+	 * {@inheritDoc}
+	 */
+	public void initialize(Map<String, Object> metaData) {
 		// Do nothing.
 	}
 
-    /**
-     * {@inheritDoc}
-     */
-    public void process(ChangeContainer change) {
-        ChangeAction action;
+	/**
+	 * {@inheritDoc}
+	 */
+	public void process(ChangeContainer change) {
+		ChangeAction action;
 
-        // Verify that the schema version is supported.
-        schemaVersionValidator.validateVersion(ApidbVersionConstants.SCHEMA_MIGRATIONS);
+		// Verify that the schema version is supported.
+		schemaVersionValidator.validateVersion(ApidbVersionConstants.SCHEMA_MIGRATIONS);
 
-        action = change.getAction();
+		action = change.getAction();
 
-        if (!actionWriterMap.containsKey(action)) {
-            throw new OsmosisRuntimeException("The action " + action + " is unrecognized.");
-        }
+		if (!actionWriterMap.containsKey(action)) {
+			throw new OsmosisRuntimeException("The action " + action + " is unrecognized.");
+		}
 
-        // Process the entity using the action writer appropriate for the change
-        // action.
-        change.getEntityContainer().process(actionWriterMap.get(action));
-    }
+		// Process the entity using the action writer appropriate for the change
+		// action.
+		change.getEntityContainer().process(actionWriterMap.get(action));
+	}
 
-    /**
-     * {@inheritDoc}
-     */
-    public void complete() {
-        changeWriter.complete();
-    }
+	/**
+	 * {@inheritDoc}
+	 */
+	public void complete() {
+		changeWriter.complete();
+	}
 
-    /**
-     * {@inheritDoc}
-     */
-    public void close() {
-        changeWriter.close();
-    }
+	/**
+	 * {@inheritDoc}
+	 */
+	public void close() {
+		changeWriter.close();
+	}
 }
