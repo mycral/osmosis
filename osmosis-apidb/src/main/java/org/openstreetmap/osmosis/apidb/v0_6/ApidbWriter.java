@@ -135,7 +135,7 @@ public class ApidbWriter implements Sink, EntityProcessor {
 	private static final int INSERT_BULK_ROW_COUNT_RELATION_TAG = 10000;
 	private static final int INSERT_BULK_ROW_COUNT_RELATION_MEMBER = 10000;
 
-	private static final int TRANSACTION_SIZE = 70000;
+	private static final int TRANSACTION_SIZE = 20000;
 
 	private String insertSqlSingleNode;
 	private String insertSqlBulkNode;
