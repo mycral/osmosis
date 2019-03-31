@@ -86,11 +86,11 @@ public class ApidbWriter implements Sink, EntityProcessor {
 
 	// These SQL statements will be invoked after loading history tables to
 	// populate the current tables.
-	private static final int LOAD_CURRENT_NODE_ROW_COUNT = 100000;
+	private static final int LOAD_CURRENT_NODE_ROW_COUNT = 10000;
 
-	private static final int LOAD_CURRENT_WAY_ROW_COUNT = 100000;
+	private static final int LOAD_CURRENT_WAY_ROW_COUNT = 10000;
 
-	private static final int LOAD_CURRENT_RELATION_ROW_COUNT = 100000;
+	private static final int LOAD_CURRENT_RELATION_ROW_COUNT = 10000;
 
 	private static final String LOAD_CURRENT_NODES = "INSERT INTO current_nodes SELECT node_id, latitude, longitude, changeset_id, visible, timestamp, tile, version"
 			+ " FROM nodes WHERE node_id >= ? AND node_id < ?";
@@ -135,7 +135,7 @@ public class ApidbWriter implements Sink, EntityProcessor {
 	private static final int INSERT_BULK_ROW_COUNT_RELATION_TAG = 10000;
 	private static final int INSERT_BULK_ROW_COUNT_RELATION_MEMBER = 10000;
 
-	private static final int TRANSACTION_SIZE = 100000;
+	private static final int TRANSACTION_SIZE = 70000;
 
 	private String insertSqlSingleNode;
 	private String insertSqlBulkNode;
