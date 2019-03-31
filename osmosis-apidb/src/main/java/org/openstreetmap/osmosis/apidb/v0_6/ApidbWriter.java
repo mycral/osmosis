@@ -88,9 +88,9 @@ public class ApidbWriter implements Sink, EntityProcessor {
 	// populate the current tables.
 	private static final int LOAD_CURRENT_NODE_ROW_COUNT = 1000000;
 
-	private static final int LOAD_CURRENT_WAY_ROW_COUNT = 100000;
+	private static final int LOAD_CURRENT_WAY_ROW_COUNT = 1000000;
 
-	private static final int LOAD_CURRENT_RELATION_ROW_COUNT = 100000;
+	private static final int LOAD_CURRENT_RELATION_ROW_COUNT = 1000000;
 
 	private static final String LOAD_CURRENT_NODES = "INSERT INTO current_nodes SELECT node_id, latitude, longitude, changeset_id, visible, timestamp, tile, version"
 			+ " FROM nodes WHERE node_id >= ? AND node_id < ?";
@@ -126,16 +126,16 @@ public class ApidbWriter implements Sink, EntityProcessor {
 
 	// These constants define how many rows of each data type will be inserted
 	// with single insert statements.
-	private static final int INSERT_BULK_ROW_COUNT_NODE = 1000;
-	private static final int INSERT_BULK_ROW_COUNT_NODE_TAG = 1000;
-	private static final int INSERT_BULK_ROW_COUNT_WAY = 1000;
-	private static final int INSERT_BULK_ROW_COUNT_WAY_TAG = 1000;
-	private static final int INSERT_BULK_ROW_COUNT_WAY_NODE = 1000;
-	private static final int INSERT_BULK_ROW_COUNT_RELATION = 1000;
-	private static final int INSERT_BULK_ROW_COUNT_RELATION_TAG = 1000;
-	private static final int INSERT_BULK_ROW_COUNT_RELATION_MEMBER = 1000;
+	private static final int INSERT_BULK_ROW_COUNT_NODE = 100000;
+	private static final int INSERT_BULK_ROW_COUNT_NODE_TAG = 100000;
+	private static final int INSERT_BULK_ROW_COUNT_WAY = 100000;
+	private static final int INSERT_BULK_ROW_COUNT_WAY_TAG = 100000;
+	private static final int INSERT_BULK_ROW_COUNT_WAY_NODE = 100000;
+	private static final int INSERT_BULK_ROW_COUNT_RELATION = 100000;
+	private static final int INSERT_BULK_ROW_COUNT_RELATION_TAG = 100000;
+	private static final int INSERT_BULK_ROW_COUNT_RELATION_MEMBER = 100000;
 
-	private static final int TRANSACTION_SIZE = 100000;
+	private static final int TRANSACTION_SIZE = 1000000;
 
 	private String insertSqlSingleNode;
 	private String insertSqlBulkNode;

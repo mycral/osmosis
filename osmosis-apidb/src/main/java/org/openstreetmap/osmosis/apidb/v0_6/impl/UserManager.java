@@ -62,6 +62,11 @@ public class UserManager implements Closeable {
 	 * @return True if the user exists, false otherwise.
 	 */
 	private boolean doesUserExistInDb(OsmUser user) {
+		if(true)
+		{
+			return false;
+		}
+		
 		if (statementExists == null) {
 			statementExists = statementContainer.add(dbCtx.prepareStatementForStreaming(SELECT_SQL_USER_EXISTS));
 		}
