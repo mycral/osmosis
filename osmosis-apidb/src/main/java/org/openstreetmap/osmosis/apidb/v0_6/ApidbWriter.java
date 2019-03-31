@@ -126,7 +126,7 @@ public class ApidbWriter implements Sink, EntityProcessor {
 
 	// These constants define how many rows of each data type will be inserted
 	// with single insert statements.
-	private static final int INSERT_BULK_ROW_COUNT_NODE = 10000;
+	private static final int INSERT_BULK_ROW_COUNT_NODE = 5000;
 	private static final int INSERT_BULK_ROW_COUNT_NODE_TAG = 10000;
 	private static final int INSERT_BULK_ROW_COUNT_WAY = 10000;
 	private static final int INSERT_BULK_ROW_COUNT_WAY_TAG = 10000;
@@ -135,7 +135,7 @@ public class ApidbWriter implements Sink, EntityProcessor {
 	private static final int INSERT_BULK_ROW_COUNT_RELATION_TAG = 10000;
 	private static final int INSERT_BULK_ROW_COUNT_RELATION_MEMBER = 10000;
 
-	private static final int TRANSACTION_SIZE = 20000;
+	private static final int TRANSACTION_SIZE = 1000000;
 
 	private String insertSqlSingleNode;
 	private String insertSqlBulkNode;
